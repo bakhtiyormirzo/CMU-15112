@@ -1,0 +1,330 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Oct 5, 2021
+
+# Topics
+# Image processing
+
+#################################################
+
+import ImageWriter
+
+# coverting the pic to black&white 
+def convertBlackWhite(pic):
+    rows = ImageWriter.getHeight(pic)
+    columns = ImageWriter.getWidth(pic)
+    for i in range(0,rows):
+        for j in range(0,columns):
+            c = ImageWriter.getColor(pic,j,i)
+            if sum(c)//3 >= 80:
+                ImageWriter.setColor(pic,j,i,[255,255,255])
+            else:
+                ImageWriter.setColor(pic,j,i,[0,0,0])
+    ImageWriter.updatePicture(pic)
+
+
+# goes through a row at a particular height from left to right
+# and returns the row index where it catches black first
+def firstBlackW(pic, height):
+    width = ImageWriter.getWidth(pic)
+    
+    for w in range(0,width):
+        colors = ImageWriter.getColor(pic, w, height)
+        if colors == [0,0,0]:
+            return w
+
+
+# goes through a row at a particular height from right to left
+# and returns the row index where it catches black first
+def firstBlackBack(pic, height):
+    width = ImageWriter.getWidth(pic)
+    
+    for w in range(width,0,-1):
+        colors = ImageWriter.getColor(pic, w, height)
+        if colors == [0,0,0]:
+            return w
+
+# removes the border by 
+# checking black pixels from left to right
+def removeBorder1(pic):
+    height = ImageWriter.getHeight(pic)
+    width = ImageWriter.getWidth(pic)
+    
+    for h in range(0,height):
+        first = firstBlackW(pic, h)
+        if first != None:
+            for w in range(first,width):
+                colors = ImageWriter.getColor(pic, w, h)
+                if colors == [0,0,0]:
+                    ImageWriter.setColor(pic,w,h,[255,255,255])
+                else:
+                    break
+    ImageWriter.updatePicture(pic)
+    
+# removes the border by 
+# checking black pixels from right to left
+# same technique as the previous one
+def removeBorder2(pic):
+    height = ImageWriter.getHeight(pic)
+    
+    # goes through rows from right to left
+    for i in range(height,0,-1):
+        first = firstBlackBack(pic,i)
+        
+        # when it catches the first black pixel
+        # and if it is not None type
+        # it changes the black to white so removes black
+        if first != None:
+            for j in range(first,0,-1):
+                colors = ImageWriter.getColor(pic, j, i)
+                if colors == [0,0,0]:
+                    ImageWriter.setColor(pic,j,i,[255,255,255])
+                else:
+                    break
+    ImageWriter.updatePicture(pic)
+
+
+# combines both fnctions to remove border
+def removeBorder(pic):
+    
+    # removes all the borders except for the rightmost bar
+    removeBorder1(pic)
+    
+    # removes rightmost bar
+    removeBorder2(pic)
+ 
+# finds the start and end of the vertical blob
+def findVerticalBlob(pic,startRow, endRow, startColumn):
+    width = ImageWriter.getWidth(pic)
+    
+    # saves the first black occurance to startX
+    hasBlack = False
+    while (startColumn < width) and (hasBlack == False):
+        for r in range(startRow,endRow):
+            colors = ImageWriter.getColor(pic, startColumn, r)
+            if colors == [0,0,0]:
+                hasBlack = True            
+        startColumn += 1  
+    startX = startColumn - 1
+    
+    # catches the end of the blob
+    # and saves the end of the blob to endX
+    allWhite = False
+    while (startColumn < width) and (allWhite == False):
+        allWhite = True
+        for r in range(startRow,endRow):
+            colors = ImageWriter.getColor(pic, startColumn, r)
+            if colors == [0,0,0]:
+                allWhite = False
+        startColumn += 1
+    endX = startColumn - 1
+    
+    # gives the output as a list of beginning 
+    # and end pixels of the blob
+    return [startX, endX]
+    
+# removes the text "Qatar" on the left
+# uses the start and end pixels from previous function output
+def removeColor(pic, startx, starty, endx, endy):
+    
+    for r in range(starty, endy):
+        for c in range(startx, endx):
+            ImageWriter.setColor(pic,c,r,[255,255,255])
+    ImageWriter.updatePicture(pic)
+    
+# check if the pixels is close to black
+# if close, returns True
+# False otherwise
+def isClose(L):
+    r = L[0]
+    g = L[1]
+    b = L[2]
+    if (r-50)<=0 and (g-50)<=0 and (b-50)<=0:
+        return True
+    return False
+
+# goes through a column in a particular row
+# if it finds a black pixel, returns True
+# False otherwise
+def isBlackRow(pic,r):
+    width = ImageWriter.getWidth(pic)
+    
+    for c in range(0,width):
+        colors = ImageWriter.getColor(pic, c, r)
+        if isClose(colors):     
+            return True
+    return False
+    
+# checks blobs horizontally
+# and gives the top and bottom pixels of
+# the biggest blob
+def horizontalSegmentation(pic):
+    height = ImageWriter.getHeight(pic)
+   
+    
+    rDif = 0
+    inBlob = False
+    startOfBlob = 0
+    maxBlob = 0
+    result = []
+    
+    for r in range(0,height):
+        
+        # if there is a black in a row outside the blob
+        # basically, start of the blob
+        if isBlackRow(pic,r) and (inBlob == False):
+            inBlob = True
+            startOfBlob = r
+            
+        # end of the blob
+        if (isBlackRow(pic,r) == False) and (inBlob == True):
+            rDif = r - startOfBlob
+            inBlob = False
+            
+            # if there are multiple blobs
+            # this condition saves the bigger one
+            if rDif > maxBlob:
+                result = [startOfBlob,r]
+                maxBlob = rDif   
+    return result
+
+# gets four points of a quadrant
+# and calculates the percentage of black color
+def percentage(pic,x,y,z,d):
+    total = 0
+    black = 0
+    
+    # goes through each row for every column
+    for c in range(x,y):
+        for r in range(z,d):
+            colors = ImageWriter.getColor(pic,c,r)
+            
+            if colors == [0,0,0]:
+                black += 1
+                total += 1
+            else:
+                total += 1
+   
+    return black / total
+                
+    
+    
+# gets the borders of a digit
+# and returns the digit as a string
+def decodeCharacter(pic, startrow, endrow, startcol, endcol):
+    midVer = round(startcol + (endcol - startcol)/2)
+    midHor = round(startrow + (endrow - startrow)/2)
+    
+    # calculates the percentage of black pixel in each quadrant
+    q1 = percentage(pic,midVer,endcol,startrow,midHor)
+    q2 = percentage(pic,startcol,midVer,startrow,midHor)
+    q3 = percentage(pic,startcol,midVer,midHor,endrow)
+    q4 = percentage(pic,midVer,endcol,midHor,endrow)
+    
+    
+    L = []
+    
+    # for zero
+    zero = (abs(0.49-q1) + abs(0.51-q2) + abs(0.52-q3) + abs(0.48-q4))/4
+    
+    # for one
+    one = (abs(0.72-q1) + abs(0.34-q2) + abs(0.005-q3) + abs(0.69-q4))/4
+    
+    # for two
+    two = (abs(0.54-q1) + abs(0.30-q2) + abs(0.51-q3) + abs(0.34-q4))/4
+    
+    # for three
+    three = (abs(0.50-q1) + abs(0.24-q2) + abs(0.22-q3) + abs(0.47-q4))/4
+    
+    # for four
+    four = (abs(0.16-q1) + abs(0.28-q2) + abs(0.41-q3) + abs(0.52-q4))/4
+    
+    # for five
+    five = (abs(0.35-q1) + abs(0.69-q2) + abs(0.32-q3) + abs(0.46-q4))/4
+    
+    # for six
+    six = (abs(0.41-q1) + abs(0.64-q2) + abs(0.54-q3) + abs(0.52-q4))/4
+    
+    # for seven
+    seven = (abs(0.59-q1) + abs(0.32-q2) + abs(0.37-q3) + abs(0.08-q4))/4
+    
+    # for eight
+    eight = (abs(0.54-q1) + abs(0.54-q2) + abs(0.51-q3) + abs(0.51-q4))/4
+    
+    # for nine
+    nine = (abs(0.53-q1) + abs(0.54-q2) + abs(0.39-q3) + abs(0.62-q4))/4
+    
+    # saves all the differences in a list
+    L += [zero] + [one] + [two] + [three] + [four]
+    L += [five] + [six] + [seven] + [eight] + [nine]
+    
+    # finds the smallest value
+    num = min(L)
+    
+    # gives the index of the smallest value
+    # and it is basically the same as what the digit actulally is
+    # so we return it as a string
+    index = L.index(num)
+   
+    return str(index)
+                                 
+            
+
+def decodeLicensePlate(filename):
+    
+    # loading the Image
+    pic = ImageWriter.loadPicture(filename)
+    
+    # coverting to black and white
+    convertBlackWhite(pic)
+    
+    # removing borders
+    removeBorder(pic)
+    
+    # removing qatar
+    columns = findVerticalBlob(pic,0,ImageWriter.getHeight(pic),0)
+    removeColor(pic, columns[0],0,columns[1],ImageWriter.getHeight(pic))
+    
+    # checks the horiontal segmentation
+    horizont = horizontalSegmentation(pic) # returns [top,bottom]
+    top = horizont[0]
+    bottom = horizont[1]
+    
+    startCol = 0
+    
+    number = ""
+    
+    # goes through borders of every digit
+    # to find what the digit is
+    # repeates 6 times as there are 6 digits
+    for i in range(6):
+        
+        # horizontal border does not change
+        # but we must move vertical borders
+        # to go to next digit 
+        vertical = findVerticalBlob(pic,top, bottom, startCol)
+        startX = vertical[0]
+        endX = vertical[1]
+        
+        startCol = endX+1
+        
+        # gets borders of a digit in a licence plate
+        # decodes the digits and saves it as a string
+        num = decodeCharacter(pic, top, bottom, startX, endX)
+        
+        # adds every single digit to final answer 
+        number += num
+        
+    
+    return number
+  
+  
+filename = "LP2.jpg"
+
+print(decodeLicensePlate(filename))                         
+                              
+                              
+                              
+
+
