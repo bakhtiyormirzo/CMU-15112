@@ -1,0 +1,480 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Sep 21, 2021
+
+#################################################
+
+import math
+
+#################################################
+# Functions 
+#################################################
+
+#### vowelCount ####
+# takes a string and returns the number of vowels
+# ignores capitalization
+def vowelCount(s):
+    vowels = "AEIOUaeiou"
+    counter = 0
+    for i in s:
+        if i in vowels:
+            counter += 1
+    return counter
+
+#### rotateStringLeft ####
+# takes the string and rotates it n places right for -n)/left for +n
+def rotateStringLeft(s, n):
+    if n > len(s):
+        n = n % len(s)
+    if n > 0:
+        s = s[n:] + s[:n]
+    else:                     # if n is negative
+        n = abs(n)
+        if n > len(s):
+            n = n % len(s)
+        s = s[(len(s)-n):] + s[:(len(s)-n)]
+    return s
+
+#### isRotation ####
+# takes two strings and checks if one is the rotation of the other
+# uses previous rotateStringLeft(s, n) helper function
+def isRotation(s, t):
+    # checks if t and s are not the same string
+    if s == t or len(s) != len(t): 
+        return False
+    # checks every rotatation of t and matches it with s
+    for i in range(1, len(t)):     
+        if rotateStringLeft(t, i) == s:
+            return True
+    return False
+
+#### nondestructiveRotateList ####
+
+import copy
+# takes a list and an integer
+# and non-destructively shifts elements to the right by k int
+def nondestructiveRotateList(L, k):
+    listCopy = copy.copy(L)
+    result = 0
+    # special case when list is empty or has one element
+    if L == [] or (len(L) == 1): 
+        return L
+    elif k > len(L):
+        k %= len(L)
+
+    diff = len(listCopy)-k 
+    if k == 0:       # considers if k is 0, positive or negative
+        return L
+    elif k < 0:
+        k = abs(k)
+        result = listCopy[k:] + listCopy[:k]
+    elif k > 0:
+        result = listCopy[diff:] + listCopy[:diff]
+    return result
+
+#### destructiveRotateList ####
+# works the same as previous funtion but this one is destructive
+def destructiveRotateList(L, k):
+    if k > len(L):
+        k -= len(L)
+    item = 0
+    if k > 0: 
+        for i in range(1, k+1):
+            item = L[(len(L)-1)]
+            L.insert(0, item)
+            L.pop(len(L)-1)
+    elif k < 0:
+        k = abs(k)
+        for i in range(1, k+1):
+            item = L[0]
+            L.append(item)
+            L.pop(0)
+
+#### mostFrequentSubstring ####
+            
+# takes a string and an int n
+# returns a list of n number of slices of text
+def listOfPhrases(text, n):
+    L = []
+    textCopy = copy.copy(text)
+    while len(textCopy) >= n:
+        L.append(textCopy[0:n])
+        textCopy = textCopy[1:]
+    return L
+
+# counts number of occurances of a phrase in a list
+def count(L, phrase):
+    count = 0
+    for i in L:
+        if i == phrase:
+            count += 1
+    return count
+
+# removes all occurances of a string from a list
+def removeString(list1, s):
+    while s in list1:
+        list1.remove(s)
+    return list1
+
+# receives two strings and returns the one with alphabetic order
+def alphabetic(s1, s2):
+    if s1 > s2:
+        return s1
+    else:
+        return s2
+ 
+# receives a text and an int n
+# return the most occurancies of string with n # of elements
+def mostFrequentSubstring(text, n):
+    if n == 0:
+        return ''
+    L = listOfPhrases(text, n)
+    maxSaved = count(L, L[0])
+    stringSaved = L[0]
+    L = removeString(L, L[0])
+    (stringRun, maxRun) = (0, 0)
+
+    while L != []:
+        maxRun = count(L, L[0])
+        stringRun = L[0]
+        
+        if maxRun > maxSaved: 
+            (maxSaved, stringSaved) = (maxRun, stringRun)
+        elif maxRun == maxSaved:
+            stringSaved = alphabetic(stringSaved, stringRun)
+        
+        L = removeString(L, L[0])
+    
+    return stringSaved
+
+#### getEvalSteps ####
+# only for multiple-digit numbers
+# takes a string and index of first digit of multiple-digit number
+# returns the whole number
+def longDigit(s, i):
+    strSaved = ""
+    sCopy = s[i:]
+    if sCopy.isdigit():
+        return sCopy
+    else:
+        while (s[i].isdigit()) and (i < len(s)):
+            strSaved += s[i]
+            i += 1
+        return strSaved
+
+
+# takes the string and turns it into a list
+# considers of it is a multiple digit number and operators like **, //
+def makeList(expr):
+    (L, indexHolder) = ([], 0)
+
+    for i in range(len(expr)):
+        index = i
+        
+        # checks if the first element is a single digit
+        if i == 0 and expr[1].isdigit() == False:
+            L.append(expr[0])
+            continue
+        
+        # True for operators
+        if expr[i].isdigit() == False:
+            
+            #considers special cases of **, //
+            if expr[(i+1)] == "*":
+                L.append("**")
+                
+            elif expr[(i+1)] == "/":
+                L.append("//")
+                
+            else:
+                # avoids adding extra * or /
+                # when **, // are already added
+                if (expr[i-1]) == "*" or (expr[i-1]) == "/":
+                    continue
+                L.append(expr[i])
+        
+        # True for digits
+        if index+1 < len(expr) and (expr[index].isdigit() == True):
+            
+            if (expr[index+1].isdigit() == True):
+                if index > 0 and(expr[index-1].isdigit()):
+                    continue
+                L.append(longDigit(expr, i))
+                
+            else:
+                if index > 0 and(expr[index-1].isdigit()):
+                    continue
+                L.append(expr[i])
+        elif (index+1) == (len(expr)) and expr[index-1].isdigit() == False:
+            L.append(expr[-1])
+        
+    return L
+    
+# turns list into string
+def listToString(s):
+    result = ""
+    for i in s:
+        result += i
+    return result
+
+    
+# calculates the first level operator ->  **
+def firstLevel(listIn, indIn):
+    if listIn[indIn] == "**":
+        before = int(listIn[indIn-1])
+        after = int(int(listIn[indIn+1]))
+        return before ** after
+    
+
+# calculates second level operators -> *, //, %
+def secondLevel(list1):
+    operators = []
+    if "*" in list1:
+        operators.append(list1.index("*"))
+    if "//" in list1:
+        operators.append(list1.index("//"))
+    if "%" in list1:
+        operators.append(list1.index("%"))
+    
+    oper = min(operators)
+    if  list1[oper] == "*":
+        before = int(list1[oper-1])
+        after = int(list1[oper+1])
+        return [(before * after), oper]
+    elif list1[oper] == "//":
+        before = int(list1[oper-1])
+        after = int(list1[oper+1])
+        return [(before // after), oper]
+    elif list1[oper] == "%":
+        before = int(list1[oper-1])
+        after = int(list1[oper+1])
+        return [(before % after), oper]
+    
+
+# calculates thrid level operators -> +, -
+def thirdLevel(list1):
+    operators = []
+    if "+" in list1:
+        operators.append(list1.index("+"))
+    if "-" in list1:
+        operators.append(list1.index("-"))
+    
+    
+    oper = min(operators)
+    if  list1[oper] == "+":
+        before = int(list1[oper-1])
+        after = int(list1[oper+1])
+        return [(before + after), oper]
+    elif list1[oper] == "-":
+        before = int(list1[oper-1])
+        after = int(list1[oper+1])
+        return [(before - after), oper]
+    
+#checks if the string is only digit
+def onlyDigit(s):
+    for i in s:
+        if i.isdigit() == False:
+            return False
+    return True
+
+# shows the step by step evaluation of math expression
+def getEvalSteps(expr):
+    
+    # special case where expression has no operators
+    if onlyDigit(expr):
+        return expr + " = " + expr
+            
+    returning = expr + " = "
+    lenReturn = len(returning)
+    spaces = (" " * len(expr)) 
+    L = makeList(expr)
+    
+    # calcuation with order of precedence
+    while (len(L)>1):
+        
+        # first level operator gets calculated
+        while ("**" in L):
+            i = L.index("**")
+            calculated = firstLevel(L, i)
+            L[i] = str(calculated)
+            if i+1 == len(L):
+                L.pop(1)
+            else:
+                L.pop(i+1)
+            L.pop(i-1)
+           
+            if lenReturn == len(returning):
+                returning = returning + listToString(L)
+            else:
+                returning = returning + "\n" + spaces + " = " + listToString(L)
+        
+        # second level operator gets calculated
+        while ("*" in L) or ("//" in L) or ("%" in L):
+            second = secondLevel(L)
+            i = second[1]
+            calculated = second[0]
+            L[i] = str(calculated)
+            if i+1 == len(L):
+                L.pop(1)
+            else:
+                L.pop(i+1)
+            L.pop(i-1)
+            
+            if lenReturn == len(returning):
+                returning = returning + listToString(L)
+            else:
+                returning = returning + "\n" + spaces + " = " + listToString(L)
+                
+        # third level operator gets calculated
+        while ("+" in L) or ("-" in L):
+            third = thirdLevel(L)
+            i = third[1]
+            
+            calculated = third[0]
+            L[i] = str(calculated)
+            
+            
+            L.pop(i-1)
+            if i+1 == 2:
+                L.pop(1)
+            else:
+                L.pop(i+1)
+            
+           
+            if lenReturn == len(returning):
+                returning = returning + listToString(L)
+            else:
+                returning = returning + "\n" + spaces + " = " + listToString(L)
+            
+    return returning
+
+#################################################
+# Test Functions
+#################################################
+
+def testVowelCount():
+    print('Testing vowelCount()...', end='')
+    assert(vowelCount("Abc def!!! a? yzyzyz!") == 3) # two a's and one e
+    assert(vowelCount("ABcdeiou?") == 5)
+    print('Passed!')
+
+def testRotateStringLeft():
+    print('Testing rotateStringLeft()...', end='')
+    assert(rotateStringLeft('abcd',  1) == 'bcda')
+    assert(rotateStringLeft('abcd', -1) == 'dabc')
+    assert(rotateStringLeft('abcd', 2) == 'cdab')
+    assert(rotateStringLeft('abcd', -2) == 'cdab')
+    assert(rotateStringLeft('abcd', 6) == 'cdab')
+    assert(rotateStringLeft('abcd', -5) == 'dabc')
+    assert(rotateStringLeft('abcd', 41) == "bcda")
+    assert(rotateStringLeft('abcd', -41) == "dabc")
+    print('Passed!')
+
+def testIsRotation():
+    print('Testing isRotation()...', end='')
+    assert(isRotation("","") == False)
+    assert(isRotation("test","test") == False)
+    assert(isRotation("abcd","dabc") == True)
+    assert(isRotation("abcd","cdab") == True)
+    print('Passed!')
+
+# Checks to make sure f(L,a) does not modify L
+def isNondestructive(f,L,a):
+    unmodifiedCopy = copy.deepcopy(L)
+    b = f(L,a)
+    return L == unmodifiedCopy
+
+def testNondestructiveRotateList():
+    print("Testing nondestructiveRotateList()...", end="")
+    assert(nondestructiveRotateList([], 42) == [])
+    assert(nondestructiveRotateList([1,2,3,4], -1) == [2,3,4,1])
+    assert(nondestructiveRotateList([1,2,3,4], 0) == [1,2,3,4])
+    assert(nondestructiveRotateList([1,2,3,4], 1) == [4,1,2,3])
+    assert(nondestructiveRotateList([1, 2, 3, 4], 444) == [1, 2, 3, 4])
+    assert(nondestructiveRotateList([42], 123) == [42])
+    assert(nondestructiveRotateList([1, 2, 3, 4], 44445) == [4, 1, 2, 3])
+    isNondestructive(nondestructiveRotateList,[1,2,3,4],1)
+    isNondestructive(nondestructiveRotateList,[1,2,3,4],2)
+    isNondestructive(nondestructiveRotateList,[1,2,3,4],3)
+    print("Passed!")
+
+def testDestructiveRotateList():
+    print("Testing destructiveRotateList()...", end="")
+    L = [1,2,3,4]
+    assert(destructiveRotateList(L,1) == None)
+    assert(L == [4,1,2,3])
+    assert(destructiveRotateList(L,2) == None)
+    assert(L == [2,3,4,1])
+    assert(destructiveRotateList(L,7) == None)
+    assert(L == [3,4,1,2])
+    L = [1, 2, 3, 4, 5]
+    assert(destructiveRotateList(L,-4) == None)
+    assert(L == [5, 1, 2, 3, 4])
+    print("Passed!")
+
+    
+def testMostFrequentSubstring():
+    print("Testing mostFrequentSubstring()...", end="")
+    s1 = "thequickbrownfoxjumpsoverthelazydog"
+    s2 = "testingthecodetofindtheerrortestandtestagain"
+    s3 = "thequickbrownfoxjumpsoverthelazyrardog"
+    s4 = "thequickbrownfoxjumpsoverthelazyrardog"
+    assert(mostFrequentSubstring("baababacb", 3) == "aba")
+    assert(mostFrequentSubstring(s1, 1) == "o")
+    assert(mostFrequentSubstring(s2, 4) == "test")
+    assert(mostFrequentSubstring(s3, 1) == "r")
+    assert(mostFrequentSubstring(s4, 0) == '')
+    print("Passed!")
+
+def testGetEvalSteps():
+    print("Testing getEvalSteps()...", end="")
+    assert(getEvalSteps("0") == "0 = 0")
+    assert(getEvalSteps("3+2") == "3+2 = 5")
+    assert(getEvalSteps("3-2") == "3-2 = 1")  # TODO: fill in 42
+    assert(getEvalSteps("3**2") == "3**2 = 9")
+    assert(getEvalSteps("31%16") == "31%16 = 15")  # TODO: fill in 42
+    assert(getEvalSteps("31*16") == "31*16 = 496")
+    assert(getEvalSteps("32//16") == "32//16 = 2")
+    assert(getEvalSteps("2+3*4") == "2+3*4 = 2+12\n      = 14")
+    assert(getEvalSteps("2*3+4") == "2*3+4 = 6+4\n      = 10"
+            )  # TODO: fill in 42 (hint: look at previous line!)
+    assert(getEvalSteps("2+3*4-8**3%3") == """\
+2+3*4-8**3%3 = 2+3*4-512%3
+             = 2+12-512%3
+             = 2+12-2
+             = 14-2
+             = 12""")
+    assert(getEvalSteps("2+3**4%2**4+15//3-8") == """\
+2+3**4%2**4+15//3-8 = 2+81%2**4+15//3-8
+                    = 2+81%16+15//3-8
+                    = 2+1+15//3-8
+                    = 2+1+5-8
+                    = 3+5-8
+                    = 8-8
+                    = 0""")
+    
+    print("Passed!")
+
+#################################################
+# testAll and main
+#################################################
+
+def testAll():
+    # comment out the tests you do not wish to run!
+    testVowelCount()
+    testRotateStringLeft()
+    testIsRotation()
+    testNondestructiveRotateList()
+    testDestructiveRotateList()
+    testMostFrequentSubstring()
+    testGetEvalSteps()
+
+def main():
+    testAll()
+
+if __name__ == '__main__':
+    main()
+
+
+
