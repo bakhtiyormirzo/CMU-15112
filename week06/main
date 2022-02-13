@@ -1,0 +1,245 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Oct 19, 2021
+
+# Topics
+# Dictionaries
+# Sets
+# Recursion (Part 1)
+
+#################################################
+
+import math
+
+#################################################
+# Functions 
+#################################################
+
+#### invertDictionary ####
+
+# input: a particuler dictionary
+# output: list with 3 elements
+def invertor(d):
+    key1 = 0
+    L = []
+    firstCheck = 0
+    dCopy = d.copy()
+    firstValue = 0
+    
+    # go through keys of dictionary
+    for key in d.keys():
+        
+        # sole purpose: gets the first item
+        if firstCheck != 1:
+            key1 = key
+            L.append(key1)
+            firstValue = d[key1]
+            firstCheck = 1
+        
+        # checks the rest of the keys
+        # when a key/value is used
+        # they are removed from dictionary
+        if firstCheck == 1 and key1 == key:
+            L.append(key)
+            del dCopy[key]
+            
+    # returns [value, list of key, updated dict]
+    # first two elements are then inverted in main function
+    return [firstValue, L, dCopy]
+
+# inverts dictionary
+def invertDictionary(d):
+    resultDict = dict()
+    
+    # untill dictionary has no key/value pair
+    # do the following
+    while len(d) != 0:
+        
+        # use invertor(d) helper function
+        # which returns a list of 3 items
+        # [
+        # value from key/value pair
+        # lsit of key,
+        # updated dictionary
+        # ]
+        inverted = invertor(d)
+        
+        firstValue = inverted[0]
+        listForSet = inverted[1]
+        
+        
+        # if same key as value returned exists
+        # add the returned key to a set
+        if firstValue in resultDict:
+            setToAdd = listForSet[0]
+            resultDict[firstValue].add(setToAdd)
+            
+        # otherwise, create new pair
+        else:
+            resultDict[firstValue] = set(listForSet)
+        
+        # update the dictionary
+        d = inverted[2]
+    
+    return resultDict
+
+
+#### destinationCity ####
+# gets a key, value pair of cities in dictionary
+# returns the city which has no outgoing city
+def destinationCity(paths):
+    
+    # copy the dictionary
+    pathsCopy = paths.copy()
+    
+    # get the keys in a list
+    keys = paths.keys()
+    
+    for key in keys:
+        dest = paths[key]
+        
+        # if a city is not a key in dictionary
+        # it is the final destionation
+        if dest not in pathsCopy:
+            return dest
+        
+        del pathsCopy[dest]
+
+#### groupAnagrams ####
+
+# takes a dictionary where values are sets of anagrams
+# returns the list of anagram sets
+def result(d):
+    L = []
+    
+    for key in d:
+        L.append(d[key])
+        
+    return L
+
+# groups anograms in a set and return list of sets
+def groupAnagrams(S):
+    
+    # creating a dictionary to store anagrams
+    database = dict()
+    
+    # going through every word in a list
+    for word in S:
+        
+        # sorting the word and joining it 
+        # into a string again to use as a key
+        wordKey = "".join(sorted(word))
+        
+        # if a word's sorted version exists in dictionary
+        # adds the word to the set of anagrams (value)
+        if wordKey in database:
+            database[wordKey].add(word)
+            
+        # otherwise, creates a new key/value pair
+        else: 
+            database[wordKey] = {word}
+    
+    # return the list of set of anagrams
+    # using helper function result(d)
+    return result(database)
+
+#### isPalindrome ####
+# check if a word is palindrome or not
+def isPalindrome(word):
+    
+    # base case
+    if len(word) == 0 or len(word) == 1:
+        return True
+    else:
+        # recursively checks the first and last letters
+        return word[0] == word[-1] and isPalindrome(word[1:-1])
+    
+
+#### capitalizeWords ####
+
+def capitalizeWords(wordList):
+    
+    # base case: stops when list has one word left
+    if len(wordList) == 0:
+        return []
+    else:
+        # recursively makes the 1st word uppercase
+        return [wordList[0].upper()] + capitalizeWords(wordList[1:])
+    
+
+#################################################
+# Test Functions
+#################################################
+
+def testInvertDictionary():
+    print("Testing invertDictionary()...", end="")
+    given = {1:2, 2:3, 3:4, 5:3}
+    answer = {2:set([1]),3:set([2,5]), 4:set([3])}
+    assert(invertDictionary(given) == answer)
+    print("Passed!")
+    
+def testDestinationCity():
+    print("Testing destinationCity()...", end="")
+    paths = {
+'London': 'New York',
+'New York': 'Lima',
+'Lima': 'Sao Paulo'
+}
+    assert(destinationCity(paths) == 'Sao Paulo')
+    print("Passed!")
+
+def testGroupAnagrams():
+    print("Testing groupAnagrams()...", end="")
+    S1 = ["own", "read", "dare", "eat", "now"]
+    S2 = ["stop", "now", "spot", "15112", "tea"]
+    S = S1 + S2
+    result1 = [{"read","dare"}, {"eat","tea"}, {"own", "now"}]
+    result = result1 + [{"stop", "spot"}, {"15112"}]
+    assert(groupAnagrams(S) == result)
+    
+    S = ["eat","tea","tan","ate","nat","bat"]
+    result = [{"ate","eat","tea"}, {"nat","tan"}, {"bat"}]
+    assert(groupAnagrams(S) == result)
+    print("Passed!")
+    
+def testIsPalindrome():
+    print("Testing isPalindrome()...", end="")
+    assert(isPalindrome("abcba")==True)
+    assert(isPalindrome("accba")==False)
+    assert(isPalindrome("a")==True)
+    print("Passed!")
+    
+def testCapitalizeWords():
+    print("Testing capitalizeWords()...", end="")
+    given = ['foo', 'bar', 'world', 'hello']
+    answer = ['FOO', 'BAR', 'WORLD', 'HELLO']
+    assert(capitalizeWords(given) == answer)
+    
+    given = ['foo', 'bar', 'hello']
+    answer = ['FOO', 'BAR', 'HELLO']
+    assert(capitalizeWords(given) == answer)
+    
+    given = []
+    answer = []
+    assert(capitalizeWords(given) == answer)
+    print("Passed!")
+
+#################################################
+# testAll and main
+#################################################
+
+### You should call your test functions here ####
+def testAll():
+    testInvertDictionary()
+    testDestinationCity()
+    #testGroupAnagrams()
+    testIsPalindrome()
+    testCapitalizeWords()
+
+def main():
+    testAll()
+
+if __name__ == '__main__':
+    main()
+
