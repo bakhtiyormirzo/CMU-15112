@@ -8,7 +8,7 @@
 import math
 
 #################################################
-# Functions (for you to write)
+# Functions 
 #################################################
 
 # the function takes the last digit of a number and puts it to the first
