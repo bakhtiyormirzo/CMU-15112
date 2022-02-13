@@ -1,0 +1,404 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+
+# Sep 7, 2021
+#################################################
+
+import math
+
+#################################################
+# Functions 
+#################################################
+
+def isEvenPositiveInt(n):
+    if isinstance(n, int) and (n>0) and (n%2==0):
+        return True
+    return False
+
+def hotdogPurchase(numHotdogs):
+    if numHotdogs == 0:
+        return 0, 0
+    frank = numHotdogs // 10
+    bun = numHotdogs // 8
+    if (numHotdogs%10) != 0:
+        frank += 1
+    if (numHotdogs%8) != 0:
+        bun += 1
+    return frank, bun
+
+def hotdogExcess(numHotdogs):
+    if numHotdogs == 0:
+        return 0, 0
+    frank = numHotdogs // 10
+    bun = numHotdogs // 8
+    if (numHotdogs%10) != 0:
+        frank += 1
+    if (numHotdogs%8) != 0:
+        bun += 1
+    frankExcess = frank * 10 - numHotdogs
+    bunExcess = bun * 8 - numHotdogs
+    return frankExcess, bunExcess
+
+def playGuessingGame():
+    print("Let's play a guessing game! Think of a type of pet.")
+    fur = input("Does it have fur?")
+    if fur == "Yes":
+        teach = input("Can you teach it to play fetch?")
+        if teach == "Yes":
+            print("It's a dog!")
+        else:
+            print("It's a cat!")
+    else:
+        swim = input("Can it swim?")
+        if swim == "Yes":
+            print("It's a fish!")
+        else:
+            print("It's a bird!")
+
+def nearestBusStop(street):
+    if street == 0:
+        return 0
+    if street < 8:
+        if street < 5:
+            return 0
+        else:
+            return 8
+    else:
+        x = street%8
+        if x < 5:
+            return street - x
+        else:
+            if x == 5:
+                return street + 3
+            elif x == 6:
+                return street + 2
+            else:
+                return street + 1
+        
+
+def getInRange(x, bound1, bound2):
+    if bound1 > bound2:
+        upper = bound1
+        lower = bound2
+    else:
+        upper = bound2
+        lower = bound1
+    if (lower<x) and (x<upper):
+        return x
+    elif x < lower:
+        return lower
+    elif x > upper:
+        return upper
+
+def almostEqual(x, y):
+    return abs(x - y) < 10**-9
+
+def isPerfectCube(n):
+    if n == 0:
+        return True
+    if type(n) == int or type(n) == float:
+        n = abs(n)
+        cube1 = n ** (1/3)
+        cube2 = round(cube1) ** 3
+        equal = almostEqual(n, cube2)
+        if equal:
+            return True
+        return False
+    else:
+        return False
+
+def angleToRGB(angle):
+    h = angle
+    s = 1
+    v = 1
+    
+    if h < 0:
+        h = 360 + h
+    c = v * s
+    x = c * (1- abs((h/60)%2 - 1))
+    #print(x)
+    m = v - c
+    
+    r1 = 0
+    g1 = 0
+    b1 = 0
+    #print("h", h)
+    if h >= 0 and h < 60:
+        r1 = c
+        g1 = x
+        b1 = 0
+        
+    elif h >= 60 and h < 120:
+        r1 = x
+        g1 = c
+        b1 = 0
+    
+    elif h >= 120 and h < 180:
+        r1 = 0
+        g1 = c
+        b1 = x
+        
+    elif h >= 180 and h < 240:
+        r1 = 0
+        g1 = x
+        b1 = c
+        
+    elif h >= 240 and h < 300:
+        r1 = x
+        g1 = 0
+        b1 = c
+        
+    elif h >= 300 and h < 360:
+        r1 = c
+        g1 = 0
+        b1 = x
+        
+    else:
+        return int(255000000)
+        
+    r = (r1 + m) * 255
+    g = (g1 + m) * 255
+    b = (b1 + m) * 255
+    
+    rgb = round(r) * (10 ** 6) + round(g) * (10 ** 3) + round(b)
+    return int(rgb)
+
+def rgbToAngle(rgb):
+    
+    # seperating r,g,b values
+    r = rgb // (10**6)
+    g = (rgb // (10**3)) % (10**3)
+    b = rgb % (10**3)
+    
+    #print(r,g,b)
+    if r > 255 or g > 255 or b > 255:
+        return None
+    
+    # dividing r,g,b by 255
+    # and calculating min, max, and difference 
+    r /= 255
+    g /= 255
+    b /= 255
+    cmax = max(r,g,b)
+    cmin = min(r,g,b)
+    diff = cmax - cmin
+    
+    #calculating hue based on different conditions
+    h = 0
+    if cmax == cmin:
+        h = 0
+        
+    elif cmax == r:
+        h = (60 * ((g - b) / diff % 6)) 
+        
+    elif cmax == g:
+        h = (60 * ((b - r) / diff + 2))
+        
+    elif cmax == b:
+        h = (60 * ((r - g) / diff + 4))
+        
+    h = round(h)
+    v = int(cmax * 100)
+    s = 0
+    
+    if cmax == 0:
+        s = 0
+    elif cmax != 0:
+        s = int((diff / cmax) * 100)
+
+    # checking if it doesn't lie at the perimeter
+    if s != 100 or v != 100:
+        return None
+    return h
+
+def colorHarmony(color1, color2):
+    angle1 = rgbToAngle(color1)
+    angle2 = rgbToAngle(color2)
+    
+    
+    if angle1 == None or angle2 == None or angle1 == angle2:
+            return None
+    if abs(angle1 - angle2) != 180:
+        
+        angle3 = (angle1+angle2)/2
+        if abs(angle1 - angle2) < 180:
+            if angle3 >= 180:
+                angle3 -= 180
+            else:
+                angle3 += 180
+    else: 
+        angle3 = (angle1 + angle2)/2
+        angle4 = (angle3 + 180)%360
+        x = angleToRGB(angle3)
+        y = angleToRGB(angle4)
+        angle5 = min(x, y)
+        return angle5
+    
+
+    return angleToRGB(angle3)
+
+#################################################
+# Test Functions
+#################################################
+
+def testIsEvenPositiveInt():
+    print("Testing isEvenPositiveInt()... ", end="")
+    assert(isEvenPositiveInt(4))
+    assert(isEvenPositiveInt(7) == False)
+    assert(isEvenPositiveInt(-2) == False)
+    assert(isEvenPositiveInt("6") == False)
+    assert(isEvenPositiveInt(None) == False)
+    assert(isEvenPositiveInt(8.0) == False)
+    assert(isEvenPositiveInt(0) == False)
+    assert(isEvenPositiveInt(8))
+    assert(isEvenPositiveInt(22))
+    print("Passed.")
+
+def testHotdogPurchase():
+    print('Testing hotdogPurchase()... ', end='')
+    assert(hotdogPurchase(0) == (0, 0))
+    assert(hotdogPurchase(13) == (2, 2))
+    assert(hotdogPurchase(26) == (3, 4))
+    assert(hotdogPurchase(39) == (4, 5))
+    assert(hotdogPurchase(50) == (5, 7))
+    assert(hotdogPurchase(61) == (7, 8))
+    assert(hotdogPurchase(80) == (8, 10))
+    assert(hotdogPurchase(88) == (9, 11))
+    print('Passed.')
+
+def testHotdogExcess():
+    print('Testing hotdogExcess()... ', end='')
+    assert(hotdogExcess(0) == (0, 0))
+    assert(hotdogExcess(13) == (7, 3))
+    assert(hotdogExcess(26) == (4, 6))
+    assert(hotdogExcess(39) == (1, 1))
+    assert(hotdogExcess(50) == (0, 6))
+    assert(hotdogExcess(61) == (9, 3))
+    assert(hotdogExcess(80) == (0, 0))
+    assert(hotdogExcess(88) == (2, 0))
+    print('Passed.')
+
+def ioTest(test):
+    import sys
+    import io
+    myOut = io.StringIO()
+    myIn = io.StringIO(test)
+    sys.stdout = myOut
+    sys.stdin = myIn
+    playGuessingGame()
+    return myOut.getvalue()
+
+
+def testPlayGuessingGame():
+    import sys
+    print("Testing playGuessingGame()...", end="")
+    tmpOut = sys.stdout
+    tmpIn = sys.stdin
+    dogTest = ioTest("Yes\nYes\n")
+    catTest = ioTest("Yes\nNo\n")
+    fishTest = ioTest("No\nYes\n")
+    birdTest = ioTest("No\nNo\n")
+    sys.stdout = tmpOut
+    sys.stdin = tmpIn
+    assert(dogTest == "Let's play a guessing game! Think of a type of pet.\n" +
+           "Does it have fur?Can you teach it to play fetch?It's a dog!\n")
+    assert(catTest == "Let's play a guessing game! Think of a type of pet.\n" +
+           "Does it have fur?Can you teach it to play fetch?It's a cat!\n")
+    assert(
+        fishTest == "Let's play a guessing game! Think of a type of pet.\n" +
+        "Does it have fur?Can it swim?It's a fish!\n")
+    assert(
+        birdTest == "Let's play a guessing game! Think of a type of pet.\n" +
+        "Does it have fur?Can it swim?It's a bird!\n")
+    print("Passed.")
+
+def testNearestBusStop():
+    print('Testing nearestBusStop()... ', end='')
+    assert(nearestBusStop(0) == 0)
+    assert(nearestBusStop(4) == 0)
+    assert(nearestBusStop(5) == 8)
+    assert(nearestBusStop(12) == 8)
+    assert(nearestBusStop(13) == 16)
+    assert(nearestBusStop(20) == 16)
+    assert(nearestBusStop(21) == 24)
+    print('Passed.')
+
+def testGetInRange():
+    print('Testing getInRange()... ', end='')
+    assert(getInRange(1, 3, 5) == 3)
+    assert(getInRange(4, 3, 5) == 4)
+    assert(getInRange(6, 3, 5) == 5)
+    assert(getInRange(6, 5, 3) == 5)
+    print('Passed.')
+
+def testIsPerfectCube():
+    print('Testing isPerfectCube()... ', end='')
+    assert(isPerfectCube(0) == True)
+    assert(isPerfectCube(-1) == True)
+    assert(isPerfectCube(1) == True)
+    assert(isPerfectCube(16) == False)
+    assert(isPerfectCube(8) == True)
+    assert(isPerfectCube(1234**3) == True)
+    assert(isPerfectCube(15) == False)
+    assert(isPerfectCube(17) == False)
+    assert(isPerfectCube(-16) == False)
+    assert(isPerfectCube(-64) == True)
+    assert(isPerfectCube(16.0000001) == False)
+    assert(isPerfectCube('Do not crash here!') == False)
+    print('Passed.')
+
+def testRGBToAngle():
+    print("Testing rgbToAngle()...", end="")
+    assert(rgbToAngle(255000000)==0) # red
+    assert(rgbToAngle(255128000)== 30) # orange
+    assert(rgbToAngle(255234010)== None) # invalid: not at the perimeter
+    assert(rgbToAngle(256)== None) # newly added
+    print("Passed. (Add more tests to be more sure!)")
+
+
+def testAngleToRGB():
+    print("Testing angleToRGB()...", end="")
+    assert(angleToRGB(0)==255000000) #red
+    assert(angleToRGB(360)==255000000) # same red
+    assert(angleToRGB(0.2)==255001000) # very close to red
+    assert(angleToRGB(30)==255128000) # orange
+    assert(angleToRGB(-90)==128000255) # newly added
+    print("Passed. (Add more tests to be more sure!)")
+
+
+def testColorHarmony():
+    print("Testing colorHarmony()...", end="")
+    assert(colorHarmony(255038000,255034)==36000255)
+    assert(colorHarmony(128255000,128000255)==255255)
+    assert(colorHarmony(255255000,255000)==128000255)
+    assert(colorHarmony(255128000,255128)==128000255)
+    assert(colorHarmony(223255,167000255)==255227000)
+    #assert(colorHarmony(30255000,255000255)==157255)
+    assert(colorHarmony(255,255)==None)
+    print("Passed. (Add more tests to be more sure!)")
+
+
+#################################################
+# testAll and main
+#################################################
+
+def testAll():
+    # comment out the tests you do not wish to run!
+    testIsEvenPositiveInt()
+    testHotdogPurchase()
+    testHotdogExcess()
+    testPlayGuessingGame()
+    testNearestBusStop()
+    testGetInRange()
+    testIsPerfectCube()
+    testRGBToAngle()
+    testAngleToRGB()
+    testColorHarmony()
+
+def main():
+    testAll()
+
+if __name__ == '__main__':
+    main()
+
