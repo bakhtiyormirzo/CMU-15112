@@ -1,0 +1,392 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Sep 14, 2021
+
+#################################################
+
+import math
+
+#################################################
+# Functions (for you to write)
+#################################################
+
+# the function takes the last digit of a number and puts it to the first
+def rotateNumber(x):
+    if x % 10 == x:
+        return x
+    lastDigit = x % 10
+    leftOver = x // 10
+    return (lastDigit * (10 ** sizeof(leftOver))) + leftOver
+
+# checks if a number is a prime
+def isPrime(n):
+    if (n < 2): 
+        return False
+    if (n == 2):
+        return True
+    if (n % 2 == 0):
+        return False
+    maxFactor = round(n**0.5)
+    for factor in range(3,maxFactor+1,2):
+        if (n % factor == 0):
+            return False
+    return True
+
+# checks if a number is circular prime
+def isCircularPrime(x):
+    rotated = 0
+    if isPrime(x) == True:
+        rotated = rotateNumber(x)
+        for i in range(sizeof(x) - 1): # checks every rotation of x
+            if isPrime(rotated) == False:
+                return False
+            rotated = rotateNumber(rotated)
+        return True
+    return False
+
+# finds the nth circular prime
+def nthCircularPrime(n):
+    found = 0
+    guess = 0
+    while (found <= n):
+        guess += 1
+        if isCircularPrime(guess):
+            found += 1
+    return guess
+    
+# counts the number of consecutive apperances of a digit
+# only checks the digit1's appearances
+def count(num, digit1):
+    if num == 0:
+        return 0
+    (counter, digit2) = (1, 0)
+    while num != 0: 
+        digit2 = num % 10
+        if digit1 == digit2:
+            counter += 1
+            num //= 10
+            continue
+        return counter
+    return counter
+
+# returns the longest successive digit from a number
+def longestDigitRun(n):
+    n = abs(n)
+    (digitSaved, digit, maxRun) = ((n % 10), 0, 0)
+    maxSaved = count((n//10), digitSaved)
+    
+    n //= 10
+    while n > 0: # checks each digit's run
+        digit = n % 10
+        maxRun = count((n//10), digit)
+        # maxRun is current digit's run
+        # maxSaved is the longest run of maxDigit so far
+        if maxRun == 0:
+            return digitSaved
+        
+        # if current digit has more consective appearance than maxSaved
+        # conditions update the maxDigit and maxRun
+        elif maxRun > maxSaved:
+            (digitSaved, maxSaved) = (digit, maxRun)
+        elif (maxRun == maxSaved) and (digitSaved > digit):
+            digitSaved = digit
+        n //= 10
+    return digitSaved
+
+# hops at each index at the value of the number at that index
+# and returns True if it reaches the last element. Flase otherwise.
+def findExit(L):
+    track = []
+    if L == []:
+        return False
+    (hops, reach, index) = (0, 0, 0)
+    while index < len(L):
+        
+        # detects the infinete loop condition
+        if index in track: 
+            return False
+        track.append(index)
+        
+        hops = L[index]
+        index = index + hops
+        
+        # detects breaking point for 0 hops
+        if (hops == 0) or (index < 0):
+            break
+        elif index < len(L):
+            reach = L[index]
+    if (len(L) == 1) or (reach == L[-1]):
+        return True
+    return False
+
+# concatanates x and y        
+def concatNumbers(x, y):   
+    return x * (10 ** sizeof(y)) + y
+
+# counts the numbber of digits in a number
+def sizeof(n):
+    size = 0
+    nCopy = n
+    while True:
+        size += 1
+        nCopy //= 10
+        if nCopy == 0:
+            return size
+        
+# extractes k number of digits from left of n
+def getLeftkDigits(n, k):
+    if k > sizeof(n):
+        return n
+    return n // (10 ** (sizeof(n) - k))
+
+# removes k number of digits from the left of n
+def removeLeftkDigits(n, k):
+    if k >= sizeof(n):
+        return 0
+    return n % (10 ** (sizeof(n) - k))
+
+# encodes number like: [sign-digit][count-count][count][number]
+def encode(n):
+    nCopy = n
+    n = abs(n)
+    sizeOfN = sizeof(n) # number of digits in n
+    countN = concatNumbers(sizeOfN, n) # [count][number]
+    sizeOfCount = sizeof(sizeOfN)
+    cCountN = concatNumbers(sizeOfCount, countN) # [count-count][count][number]
+    
+    # checks the sign of the number. 1 for poritive
+    #                                2 for negative
+    if nCopy < 0:
+        return concatNumbers(2, cCountN)
+    return concatNumbers(1, cCountN)
+
+# decode the previously encoded number from last question
+def decode(n):
+    
+    # checks the sign of number
+    # and removes the digit (1 or 2) from n
+    sign = getLeftkDigits(n, 1)
+    remaining = removeLeftkDigits(n, 1)
+    
+    # checks the number of digits in the count
+    # and removes corresponding digit
+    countCount = getLeftkDigits(remaining, 1)
+    remaining = removeLeftkDigits(remaining, 1)
+    
+    # removes the count of digits
+    count = getLeftkDigits(remaining, countCount)
+    remaining = removeLeftkDigits(remaining, countCount)
+    
+    # isolates the number itself
+    number = getLeftkDigits(remaining, count)
+    remaining = removeLeftkDigits(remaining, count)
+    
+    # checks for the sign
+    if sign == 1:
+        return [number, remaining]
+    return [-number, remaining]
+
+# encoding the list of integers and concatanating them 
+def encodeList(L):
+    encoded0 = encode(L[0])
+    encoding = 0
+    concated = 0
+    
+    if len(L) == 1: # if only there's 1 item in list
+        return encoded0
+    
+    # encodes and concatanates integers in a list
+    for i in range(1, len(L)):
+        encoding = encode(L[i])
+        if i == 1:
+            concated = concatNumbers(encoded0, encoding)
+            continue
+        concated = concatNumbers(concated, encoding)
+        
+    # returns the encoded number as a single integer
+    return concated
+
+# decoding number and returning them in a list
+def decodeList(n):
+    L = []
+    
+    # decodes number starting from left
+    # puts decoded number in a list L
+    decoded = decode(n)
+    L.append(decoded[0])
+    remaining = decoded[1]
+    
+    # decodes until there is no encoded number left
+    while remaining != 0:   
+        decoded = decode(remaining)
+        L.append(decoded[0])
+        remaining = decoded[1]
+    return L
+
+#################################################
+# Test Functions
+#################################################
+def testSizeof():
+    print('Testing sizeof()... ', end='')
+    assert(sizeof(1) == 1)
+    assert(sizeof(12) == 2)
+    assert(sizeof(123) == 3)
+    assert(sizeof(1234) == 4)
+    assert(sizeof(12345) == 5)
+    assert(sizeof(123456) == 6)
+    print('Passed!')
+    
+def testRotateNumber():
+    print('Testing rotateNumber()... ', end='')
+    assert(rotateNumber(1234) == 4123)
+    assert(rotateNumber(4123) == 3412)
+    assert(rotateNumber(3412) == 2341)
+    assert(rotateNumber(2341) == 1234)
+    assert(rotateNumber(5) == 5)
+    assert(rotateNumber(111) == 111)
+    print('Passed!')
+
+
+def testIsCircularPrime():
+    print('Testing isCircularPrime()... ', end='')
+    assert(isCircularPrime(2))
+    assert(isCircularPrime(11))
+    assert(isCircularPrime(13))
+    assert(isCircularPrime(79))
+    assert(isCircularPrime(197))
+    assert(isCircularPrime(1193))
+    print('Passed!')
+
+
+def testNthCircularPrime():
+    print('Testing nthCircularPrime()... ', end='')
+    assert(nthCircularPrime(0) == 2)
+    assert(nthCircularPrime(4) == 11)
+    assert(nthCircularPrime(5) == 13)
+    assert(nthCircularPrime(11) == 79)
+    assert(nthCircularPrime(15) == 197)
+    assert(nthCircularPrime(25) == 1193)
+    print('Passed!')
+
+def testCount():
+    print('Testing count()... ', end='')
+    assert(count(1, 1) == 2)
+    assert(count(123, 2) == 1)
+    assert(count(122233, 3) == 3)
+    assert(count(2453555, 5) == 4)
+    assert(count(11111, 1) == 6)
+    assert(count(9999979, 9) == 2)
+    assert(count(1177, 7) == 3)
+    assert(count(0, 1) == 0)
+    print('Passed!')
+    
+def testLongestDigitRun():
+    print('Testing longestDigitRun()... ', end='')
+    assert(longestDigitRun(117773732) == 7)
+    assert(longestDigitRun(-677886) == 7)
+    assert(longestDigitRun(5544) == 4)
+    assert(longestDigitRun(1) == 1)
+    assert(longestDigitRun(0) == 0)
+    assert(longestDigitRun(22222) == 2)
+    assert(longestDigitRun(111222111) == 1)
+    print('Passed.')
+
+def testFindExit():
+    print('Testing findExit()... ', end='')
+    assert(findExit([]) == False)
+    assert(findExit([2,0,1,0]) == True)
+    assert(findExit([1,1,0,1]) == False)
+    assert(findExit([1,2,0,3,1]) == False)
+    assert(findExit([1]) == True)
+    assert(findExit([1,1]) == True)
+    assert(findExit([-5,1]) == False)
+    assert(findExit([1,2,0,-2,5]) == False)
+    assert(findExit([1,2,2,-1,5]) == True)
+    print('Passed!')
+
+def testConcatNumbers():
+    print('Testing concatNumbers()... ', end='')
+    assert(concatNumbers(5, 8) == 58)
+    assert(concatNumbers(200, 12) == 20012)
+    assert(concatNumbers(25, 8) == 258)
+    assert(concatNumbers(8, 25) == 825)
+    assert(concatNumbers(12, 200) == 12200)
+    assert(concatNumbers(00, 3) == 3)
+    print('Passed!')
+
+
+def testGetLeftkDigits():
+    print('Testing getLeftkDigits()... ', end='')
+    assert(getLeftkDigits(1234,2) == 12)
+    assert(getLeftkDigits(1234,3) == 123)
+    assert(getLeftkDigits(1234,5) == 1234)
+    assert(getLeftkDigits(0,1) == 0)
+    print('Passed!')
+
+def testRemoveLeftkDigits():
+    print('Testing removeLeftkDigits()... ', end='')
+    assert(removeLeftkDigits(1234,2) == 34)
+    assert(removeLeftkDigits(1234,3) == 4)
+    assert(removeLeftkDigits(1234,5) == 0)
+    assert(removeLeftkDigits(0,1) == 0)
+    print('Passed!')
+
+def testEncode():
+    print('Testing encode()... ', end='')
+    assert(encode(789) == 113789)
+    assert(encode(-789) == 213789)
+    assert(encode(1234512345) == 12101234512345)
+    assert(encode(-1234512345) == 22101234512345)
+    assert(encode(0) == 1110)
+    print('Passed!')
+
+def testDecode():
+    print('Testing decode()... ', end='')
+    assert(decode(113789) == [789,0])
+    assert(decode(213789) == [-789,0])
+    assert(decode(12101234512345) == [1234512345,0])
+    assert(decode(22101234512345) == [-1234512345,0])
+    assert(decode(1110) == [0,0])
+    assert(decode(113789113789) == [789,113789])
+    print('Passed!')
+
+def testEncodeList():
+    print('Testing encodeList()... ', end='')
+    assert(encodeList([789,-789,1234512345]) == 11378921378912101234512345)
+    assert(encodeList([-1457902952]) == 22101457902952)
+    print('Passed!')
+
+def testDecodeList():
+    print('Testing decodeList()... ', end='')
+    assert(decodeList(11378921378912101234512345) == [789,-789,1234512345])
+    print('Passed!')
+
+#################################################
+# testAll and main
+#################################################
+
+def testAll():
+    # comment out the tests you do not wish to run!
+    testSizeof()
+    testRotateNumber()
+    testIsCircularPrime()
+    testNthCircularPrime()
+    testCount()
+    testLongestDigitRun()
+    testFindExit()    
+    testConcatNumbers()
+    testGetLeftkDigits()
+    testRemoveLeftkDigits()
+    testEncode()
+    testDecode()
+    testEncodeList()
+    testDecodeList()
+
+def main():
+    testAll()
+
+if __name__ == '__main__':
+    main()
+
+
