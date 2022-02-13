@@ -1,0 +1,341 @@
+###################
+
+Bakhtiyorjon Mirzajonov
+
+Aug 31, 2021
+###################
+
+# Introduction to Computing 
+# Getting started with Python
+# Sequences and functions with Turtle
+
+# this python code draws three picture: clock, flag of Qatar, and school 
+# to run the program, uncomment the drawClassroom() function at the bottom
+# and run the python file
+
+# run the program in you preffered IDE
+
+
+from turtle import *
+
+speed(200)
+
+def drawOne():
+    # drawing 1 with a pensize of 3, height of 24
+    width(3)
+    forward(4)
+    backward(8)
+    forward(4)
+    left(90)
+    forward(24)
+    left(135)
+    forward(12)
+
+# drawOne()
+
+def drawTwo():
+    width(3)
+    backward(15)
+    left(40)
+    forward(18)
+    left(50)
+    forward(12)
+    left(45)
+    forward(1)
+    left(45)
+    forward(10)
+
+# drawTwo()
+
+def drawThree():
+    width(3)
+    forward(10)
+    left(50)
+    forward(4)
+    left(35)
+    forward(4)
+    left(35)
+    forward(4)
+    left(20)
+    forward(3)
+    left(35)
+    forward(8)
+    
+    backward(8)
+    right(180)
+    left(35)
+    forward(3)
+    left(20)
+    forward(4)
+    left(35)
+    forward(4)
+    left(35)
+    forward(4)
+    left(65)
+    forward(10)
+    
+# drawThree()
+
+def drawSix():
+    width(3)
+    
+    penup()
+    goto(0,15)
+    pendown()
+    
+    circle(6)
+    penup()
+    goto(6,24)
+    left(90)
+    pendown()
+    forward(7)
+    left(25)
+    forward(4)
+    left(25)
+    forward(5)
+    left(50)
+    forward(7)
+    
+#drawSix()
+
+def drawNine():
+    circle(6)
+    penup()
+    goto(-68,98)
+    left(15)
+    pendown()
+    
+    forward(8)
+    right(25)
+    forward(4)
+    right(25)
+    forward(5)
+    right(35)
+    forward(6)
+    right(40)
+
+#drawNine()
+    
+def drawClock():
+    # drawing a clock
+    width(6)
+    pencolor('skyblue')
+    circle(100)
+    
+    penup()
+    left(90)
+    forward(3)
+    right(90)
+    pendown()
+    
+    pencolor('black')
+    width(3)
+    circle(96)
+    
+    penup()
+    left(90)
+    forward(96)
+    pendown()
+    
+    pencolor('green')
+    left(90)
+    forward(50)
+    
+    penup()
+    backward(50)
+    pendown()
+    
+    pencolor('blue')
+    right(135)
+    forward(70)
+    
+    penup()
+    backward(70)
+    pendown()
+    
+    pencolor('red')
+    right(150)
+    forward(85)
+    
+    # setting position for 9
+    penup()
+    goto(-80,100)
+    pendown()
+    
+    pencolor('black')
+    drawNine()
+    
+    # setting position for 6
+    penup()
+    goto(0,15)
+    right(135)
+    pendown()
+    
+    drawSix()
+    
+    # setting position for 1
+    penup()
+    right(200)
+    goto(-15, 155)
+    pendown()
+    
+    drawOne()
+    
+    # setting position for 2
+    penup()
+    left(135)
+    goto(10, 155)
+    pendown()
+    
+    drawTwo()
+    
+    # setting position for 3
+    penup()
+    goto(70,85)
+    left(180)
+    pendown()
+    
+    drawThree()
+    
+    # setting position for markings
+    penup()
+    goto(0,96)
+    left(180)
+    
+    for _ in range(12):
+        # hour markings
+        forward(86)
+        pendown()
+        forward(8)
+        penup()
+        goto(0,96)
+        right(30)
+        
+    penup()
+    
+    for _ in range(60):
+        # second markings
+        forward(90)
+        pendown()
+        forward(4)
+        penup()
+        goto(0,96)
+        right(6)
+        
+    penup()
+    setheading(0)
+    
+#drawClock()
+
+def drawQatarFlag():
+    
+    penup()
+    goto(200, 0)
+    pendown()
+    
+    forward(500)
+    left(90)
+    forward(200)
+    left(90)
+    forward(500)
+    left(90)
+    forward(200)
+    
+    left(90)
+    forward(120)
+    
+    color('maroon')
+    begin_fill()
+    side = 22.2
+    y = 0
+    
+    for i in range(9):   
+        
+        left(30)
+        forward(side)
+        left(180-60)
+        forward(side)
+        
+        penup()
+        y = y + side
+        goto(320,y)
+        setheading(0)
+        pendown()
+    
+    #coloring the whole part
+    forward(380)
+    right(90)
+    forward(200)
+    right(90)
+    forward(380)
+    end_fill()
+    
+    
+#drawQatarFlag()
+    
+def backToSchool():
+    
+    penup()
+    setheading(0)
+    goto(-96,-100)
+    pendown()
+    
+    # outer ractangle
+    color('chocolate4')
+    begin_fill()
+    forward(780)
+    right(90)
+    forward(350)
+    right(90)
+    forward(780)
+    right(90)
+    forward(350)
+    end_fill()
+    
+    #inner rectangle
+    penup()
+    goto(-50, -130)
+    setheading(0)
+    pendown()
+    
+    color('black')
+    begin_fill()
+    forward(690)
+    right(90)
+    forward(290)
+    right(90)
+    forward(690)
+    right(90)
+    forward(290)
+    end_fill()
+    
+    # setting position for text
+    penup()
+    setheading(0)
+    goto(30, -330)
+    
+    pendown()
+    pencolor('white')
+    write('Back To School', False, 'left', font = ('Arial', 35, 'bold'))
+    
+    
+    
+    
+def drawClassroom():
+    
+    drawClock()
+    drawQatarFlag()
+    
+    penup()
+    setheading(0)
+    goto(-96,-150)
+    pendown()
+    
+    backToSchool()
+    
+    hideturtle()
+    
+# drawClassroom()
+    
+    
+    
