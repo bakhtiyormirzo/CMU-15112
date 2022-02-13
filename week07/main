@@ -1,0 +1,780 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Oct 26, 2021
+
+# Topics
+# Recurion (Part 2)
+# Object Oriented Programming
+# 2D Lists
+
+#################################################
+
+import math
+
+#################################################
+# Functions 
+#################################################
+
+# a function to return alternate sum of
+# numbers on a list
+def alternatingSum(lst):
+    
+    # Base case
+    if len(lst) == 0:
+        return 0
+    elif len(lst) == 1:
+        return lst[0]
+    
+    # recursive case
+    else:
+        return lst[0] - lst[1] + alternatingSum(lst[2:])
+
+
+
+# recursively checks every digit
+# and returns only even digits as an int
+def findEvens(n):
+    # Base case
+    if n == 0:
+        return 0
+    else:
+        num = n % 10
+        if num % 2 == 0:
+            return findEvens(n//10) * 10 + num
+        else:
+            return findEvens(n//10)
+
+
+# from a list of integers
+# returns the list of even digits
+# of the numbers
+def onlyEvenDigits(L):
+    if len(L) == 0:
+        return []
+    else:
+        return [findEvens(L[0])] + onlyEvenDigits(L[1:])
+    
+    
+    
+class Polynomial(object):
+    def __init__(self, L):
+        self.L = []
+        self.inputList = L
+        
+        if self.inputList == []:
+            self.L = [0]
+        elif len(self.inputList) == 1 and self.inputList[0] != 0:
+            self.L = self.inputList[0]
+        elif len(self.inputList) == 1 and self.inputList[0] == 0:
+            self.L = self.inputList
+        num = 0
+        if len(self.inputList) > 1:
+            for i in range(len(self.inputList)):
+                if self.inputList[i] != 0:
+                    num = i
+                    break
+            self.L += self.inputList[num:]
+            
+        
+        
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return False
+        
+        elif isinstance(other, Polynomial) and len(self.L) == 0:
+            return other.L == self.L
+        
+        elif isinstance(other, int):
+            return other == self.L
+        
+        return isinstance(other, Polynomial) and self.L == other.L 
+    
+    def __hash__(self):
+        return hash( tuple(self.L) )
+    
+    
+    def __repr__(self):
+        if len(self.L) == 0:
+            return "Polynomial([0])"
+        else:
+            return f"Polynomial(coeffs={self.L})"
+    
+    def degree(self):
+        return len(self.L) - 1
+    
+    def coeff(self, i):
+        if i == 0:
+            return self.L[-1]
+        else:
+            return self.L[-1 -i]
+    
+    def evalAt(self, x):
+        result = 0
+        degree = len(self.L) - 1
+        for i in range(len(self.L)):
+            result += self.L[i] * (x ** degree)
+            degree -= 1
+        return result
+    
+    def scaled(self, y):
+        L = []
+        for i in range(len(self.L)):
+            L.append(self.L[i] * y)
+        return Polynomial(L)
+    
+    def derivative(self):
+        list1 = []
+        x = 1
+        
+        for i in range(len(self.L)):
+            if i == len(self.L)-1:
+                continue
+            
+            list1.append(self.L[i] * (len(self.L) - x))
+            x += 1
+        
+        return Polynomial(list1)
+        
+    def addPolynomial(self, p):
+        if isinstance(p, Polynomial):
+            lengthSelf = len(self.L)
+            lengthP = len(p.L)
+            diff = abs(lengthSelf - lengthP)
+            if lengthSelf > lengthP:
+                bigger = self.L
+                smaller = p.L
+            else:
+                bigger = p.L
+                smaller = self.L
+
+            
+            added = bigger[:diff]
+            leftover = bigger[diff:]
+            for i in range(len(leftover)):
+                added.append(leftover[i] + smaller[i])
+                
+            return Polynomial(added)
+        
+    def multiplyPolynomial(self, p):
+        result = []
+        
+        if isinstance(p, Polynomial):
+            reverseSelf = self.L[::-1]
+            reversePL = p.L[::-1]
+            
+            for g in range(len(reverseSelf) + len(reversePL)):
+                result.append(0)
+                
+            for i in range(len(reverseSelf)):
+                for j in range(len(reversePL)):
+                    result[i+j] += reverseSelf[i] * reversePL[j]
+                    
+            return Polynomial(result[::-1])
+            
+
+
+class Quadratic(Polynomial):
+    def __init__(self, Q):
+        super().__init__(Q)
+        self.Q = Q
+        if len(self.Q) != 3:
+            return "ValueError Exception!"
+        
+    def __repr__(self):
+        return f"Quadratic(a={self.L[0]}, b={self.L[1]}, c={self.L[2]})"
+    
+    def discriminant(self):
+        a = self.L[0]
+        b = self.L[1]
+        c = self.L[2]
+        return b**2 - 4*a*c
+    
+    def numberOfRealRoots(self):
+        if self.discriminant() > 0:
+            return 2
+        elif self.discriminant() == 0:
+            return 1
+        else:
+            return 0
+        
+    def getRealRoots(self):
+        a = self.L[0]
+        b = self.L[1]
+        c = self.L[2]
+        x1, x2 = 0, 0
+        roots = []
+        if self.numberOfRealRoots() == 2:
+            x1 = (-b - self.discriminant() ** 0.5) / (2*a)
+            x2 = (-b + self.discriminant() ** 0.5) / (2*a)
+            roots += [x1, x2]
+        elif self.numberOfRealRoots() == 1:
+            x1 = (-b) / (2*a)
+            roots += [x1]
+        return roots
+            
+    
+            
+    
+##########################
+# Tokenize turtle script
+##########################
+
+# helper function to extract function cmd
+def getFunc(p):
+    
+    # by definition "MA" is a function
+    # extractes the function definition
+    s = p[:2]
+    p = p[2:]
+    
+    # count for curly braces
+    # used to detect the end of the function
+    count = 0
+    index = 0
+    
+    
+    for i in range(len(p)):
+        s += p[i]
+        
+    
+        if p[i] == "{":
+            count += 1
+        elif p[i] == "}":
+            count -= 1
+            
+        # special cases for F, R, L inside the function
+        if p[i] == "F" and p[i+1].isdigit() == False:
+            s += "50"
+        elif p[i] == "R" and p[i+1].isdigit() == False:
+            s += "90"
+        elif p[i] == "L" and p[i+1].isdigit() == False:
+            s += "90"
+            
+        
+        
+        if count == 0:
+            index = i
+            break
+        
+    # retunrs the cmd and the updated string
+    return [s, p[index+1:]]
+
+# extractes the repeating cmds (loops)
+def getLoop(p):
+    s = p[:2]
+    p = p[2:]
+    index = 0
+    count = 0
+    
+    for i in range(len(p)):
+        s += p[i]
+        
+        if p[i] == "{":
+            count += 1
+        elif p[i] == "}":
+            count -= 1
+        
+        # special cases for F, R, L inside the loops
+        if p[i] == "F" and p[i+1].isdigit() == False:
+            s += "50"
+        elif p[i] == "R" and p[i+1].isdigit() == False:
+            s += "90"
+        elif p[i] == "L" and p[i+1].isdigit() == False:
+            s += "90"
+        
+        if count == 0:
+            index = i
+            break
+    
+    # retunrs the cmd and the updated string
+    return [s, p[index+1:]]
+
+# extractes the L cmd
+def getLeft(p):
+    index = 0
+    
+    # when L is the only and last string
+    if len(p) == 1:
+        return ["L90", ""]
+    
+    # L for default value check
+    elif len(p) != 1 and p[1].isdigit() == False:
+        return ["L90", p[1:]]
+    
+    s = p[0]
+    p = p[1:]
+    
+    # loops through elements in a string
+    # and breaks after cmd is extarcted
+    for i in range(len(p)):
+        if p[i].isdigit() == False:
+            index = i
+            break
+        s += p[i]
+        
+    updatedP = p[index:]
+    if updatedP[0].isdigit():
+        return [s, ""]
+
+    # retunrs the cmd and the updated string
+    return [s, updatedP]
+
+# extractes the R cmd
+def getRight(p):
+    index = 0
+    
+    # when R is the only and last string
+    if len(p) == 1:
+        return ["R90", ""]
+    
+    # R for default value check
+    elif len(p) != 1 and p[1].isdigit() == False:
+        return ["R90", p[1:]]
+    
+    s = p[0]
+    p = p[1:]
+    
+    # loops through elements in a string
+    # and breaks after cmd is extarcted
+    for i in range(len(p)):
+        if p[i].isdigit() == False:
+            index = i
+            break
+        s += p[i]
+        
+    updatedP = p[index:]
+    if updatedP[0].isdigit():
+        return [s, ""]
+
+    # retunrs the cmd and the updated string
+    return [s, updatedP]
+        
+# extractes the F cmd
+def getForward(p):
+    
+    # when F is the only and last string
+    if len(p) == 1:
+        return ["F50", ""]
+    
+    # F for default value check
+    elif len(p) != 1 and p[1].isdigit() == False:
+        return ["F50", p[1:]]
+    
+    index = 0
+    s = p[0]
+    p = p[1:]
+    
+    # loops through elements in a string
+    # and breaks after cmd is extarcted
+    for i in range(len(p)):
+        if p[i].isdigit() == False:
+            index = i
+            break
+        s += p[i]
+        
+    updatedP = p[index:]
+    if updatedP[0].isdigit():
+        return [s, ""]
+
+    # retunrs the cmd and the updated string
+    return [s, updatedP]
+
+
+# function to checks for cmds in a program
+# and returns a list [cmd, updated_program]
+# a program is updated by removing the cmd 
+def tokenized(p):
+    
+    # conditions for all the commands
+    # most of them use a helper fundtion
+    # to extract the cmd and update the program
+    if p[0] == "M":
+        func = getFunc(p)
+    elif p[0] == "X":
+        func = getLoop(p)
+    elif p[0] == "U":
+        func = ["U", p[1:]]
+    elif p[0] == "D":
+        func = ["D", p[1:]]
+    elif p[0] == "L":
+        func = getLeft(p)
+    elif p[0] == "R":
+        func = getRight(p)
+    elif p[0] == "F":
+        func = getForward(p)
+    elif p[0] not in "FLRDUXM":
+        func = [p[0], p[1:]]
+        
+    cmd = func[0]
+    updatedP = func[1]
+    return [cmd, updatedP]
+        
+# everything happens here!
+# takes a string and returns the cmds in a list
+def tokenizeTurtleScript(program):
+    result = []
+    p = ""
+    
+    # clears the programs from unnecessary
+    # white spaces 
+    for i in range(len(program)):
+        if program[i] == " ":
+            continue
+        p += program[i]
+        
+    # uses the tokenized(p) helper function to extract cmds
+    # and puts them in a list result
+    while len(p) > 0:
+        token = tokenized(p)
+        
+        result.append(token[0])
+        p = token[1]
+        
+    return result
+
+
+### Functions for convertTurtleScript(program, funcs)
+
+# function to print penup and pendown
+# given the cmd as a string
+def du(item):
+    if item == "D":
+        print("turtle.pendown()")
+    elif item == "U":
+        print("turtle.penup()")
+        
+
+# function to print forward, left, right
+# commands given the cmd as a string
+def flr(item):
+    if item[0] == "F":
+        print("turtle.forward(" + item[1:] + ")")
+    elif item[0] == "L":
+        print("turtle.left(" + item[1:] + ")")
+    elif item[0] == "R":
+        print("turtle.right(" + item[1:] + ")")
+    
+
+# function to handle loop inside a loop
+def loopInLoop(item):
+    
+    # range of the loop
+    repeat = int(item[0])
+    item = item[2:len(item)]
+    
+    
+    cmdsInLoop = tokenizeTurtleScript(item)
+    
+    # goes through every cmd and uses corrensponding
+    # helper functions to print commands
+    while repeat != 0:
+        for i in range(len(cmdsInLoop)):
+            if cmdsInLoop[i][0] in "FLR":
+                flr(cmdsInLoop[i])
+              
+            elif cmdsInLoop[i][0] in "DU":
+                du(cmdsInLoop[i])
+        repeat -= 1
+    
+# function to handle loops "X"
+def looping(item,d):
+    
+    # range of the loop
+    repeat = int(item[0])
+    item = item[2:len(item)]
+    
+    index = 0
+    
+    # turns the cmds to a list of strings
+    cmdsInLoop = tokenizeTurtleScript(item)
+    
+    # go though every cmd and print the corresponding
+    # message using helper functions
+    while repeat != 0:
+        for i in range(len(cmdsInLoop)):
+            
+            if cmdsInLoop[i][0] == "X":
+                loopInLoop(cmdsInLoop[i][1:len(cmdsInLoop[i])-1])
+                
+            if cmdsInLoop[i][0] in "FLR":
+                flr(cmdsInLoop[i])
+              
+            elif cmdsInLoop[i][0] in "DU":
+                du(cmdsInLoop[i])
+                
+            elif cmdsInLoop[i][0] not in "FLRDUX":
+                m(d[cmdsInLoop[i][0]])
+                
+        repeat -= 1
+            
+# a function to handle function
+# this runs when a predefined function is called
+def m(s):
+    convertTurtleScript(s, {})
+    
+# main function
+# given the program as a string
+# prints the Python script of the cmds
+def convertTurtleScript(program, funcs):
+    
+    # put the in a list as a string
+    cmds = tokenizeTurtleScript(program)
+    
+    # Base case for a recursion
+    if len(cmds) == 0:
+        return ""
+    
+    
+    item = cmds[0]
+
+    # conditions for cmds
+    if item[0] == "M":
+        funcs[item[1]] = item[3:(len(item)-1)]
+    elif item[0] == "X":
+        looping(item[1:(len(item)-1)], funcs)
+    elif item[0] in "FLR":
+        flr(item)
+    elif item[0] in "DU":
+        du(item)
+    elif item[0] not in "MFLRDU":
+        
+        m(funcs[item[0]])
+    
+    # joining the leftover to a string
+    p = "".join(cmds[1:])
+    
+    # running the function again
+    # on the rest of the problem
+    return convertTurtleScript(p, funcs)
+
+
+########################
+#    Test cases
+########################
+
+def testAlternatingSum():
+    print("Testing alternatingSum()...", end="")
+    
+    given = [1,2,3,4,5]
+    assert(alternatingSum(given) == 3)
+    
+    print("Passed!")
+    
+    
+def testOnlyEvenDigits():
+    print("Testing onlyEvenDigits()...", end="")
+    
+    given = [43, 23265, 17, 58344]
+    answer = [4, 226, 0, 844]
+    assert(onlyEvenDigits(given) == answer)
+    
+    print("Passed!")
+    
+    
+def testPolynomialBasics():
+    # we'll use a very simple str format...
+    assert(str(Polynomial([1,2,3])) == "Polynomial(coeffs=[1, 2, 3])")
+    p1 = Polynomial([2, -3, 5])  # 2x**2 -3x + 5
+    assert(p1.degree() == 2)
+
+    # p.coeff(i) returns the coefficient for x**i
+    assert(p1.coeff(0) == 5)
+    assert(p1.coeff(1) == -3)
+    assert(p1.coeff(2) == 2)
+
+    # p.evalAt(x) returns the polynomial evaluated at that value of x
+    assert(p1.evalAt(0) == 5)
+    assert(p1.evalAt(2) == 7)
+
+def testPolynomialEq():
+    assert(Polynomial([1,2,3]) == Polynomial([1,2,3]))
+    assert(Polynomial([1,2,3]) != Polynomial([1,2,3,0]))
+    assert(Polynomial([1,2,3]) != Polynomial([1,2,0,3]))
+    assert(Polynomial([1,2,3]) != Polynomial([1,-2,3]))
+    assert(Polynomial([1,2,3]) != 42)
+    assert(Polynomial([1,2,3]) != "Wahoo!")
+    # A polynomial of degree 0 has to equal the same non-Polynomial numeric!
+    assert(Polynomial([42]) == 42)  
+
+def testPolynomialConstructor():    
+    # If the list is empty, treat it the same as [0]
+    assert(Polynomial([]) == Polynomial([0]))
+    assert(Polynomial([]) != Polynomial([1]))
+    # In fact, disregard all leading 0's in a polynomial
+    assert(Polynomial([0,0,0,1,2]) == Polynomial([1,2]))
+    assert(Polynomial([0,0,0,1,2]).degree() == 1)
+
+    # Require that the constructor be non-destructive
+    coeffs = [0,0,0,1,2]
+    assert(Polynomial(coeffs) == Polynomial([1,2]))
+    assert(coeffs == [0,0,0,1,2])
+
+    # Require that the constructor also accept tuples of coefficients
+    coeffs = (0, 0, 0, 1, 2)
+    assert(Polynomial(coeffs) == Polynomial([1,2]))
+
+def testPolynomialInSets():
+    s = set()
+    assert(Polynomial([1,2,3]) not in s)
+    s.add(Polynomial([1,2,3]))
+    assert(Polynomial([1,2,3]) in s)
+    assert(Polynomial([1,2,3]) in s)
+    assert(Polynomial([1,2]) not in s)
+
+def testPolynomialMath():
+    p1 = Polynomial([2, -3, 5])  # 2x**2 -3x + 5
+
+    # p.scaled(scale) returns a new polynomial with all the
+    # coefficients multiplied by the given scale
+    p2 = p1.scaled(10) # 20x**2 - 30x + 50
+    assert(isinstance(p2, Polynomial))
+    assert(p2.evalAt(0) == 50)
+    assert(p2.evalAt(2) == 70)
+
+    # p.derivative() will return a new polynomial that is the derivative
+    # of the original, using the power rule:
+    # More info: https://www.mathsisfun.com/calculus/power-rule.html
+    p3 = p1.derivative() # 4x - 3
+    assert(type(p3) == Polynomial)
+    assert(str(p3) == "Polynomial(coeffs=[4, -3])")
+    assert(p3.evalAt(0) == -3)
+    assert(p3.evalAt(2) == 5)
+
+    # we can add polynomials together, which will add the coefficients
+    # of any terms with the same degree, and return a new polynomial
+    p4 = p1.addPolynomial(p3) # (2x**2 -3x + 5) + (4x - 3) == (2x**2 + x + 2)
+    assert(type(p4) == Polynomial)
+    assert(str(p4) == "Polynomial(coeffs=[2, 1, 2])")
+    assert(p1 == Polynomial([2, -3, 5]))
+    assert(p4.evalAt(2) == 12)
+    assert(p4.evalAt(5) == 57)
+    # can't add a string and a polynomial!
+    assert(p1.addPolynomial("woo") == None)
+
+    # lastly, we can multiple polynomials together, which will multiply the
+    # coefficients of two polynomials and return a new polynomial with the
+    # correct coefficients.
+    # More info: https://www.mathsisfun.com/algebra/polynomials-multiplying.html
+
+    p1 = Polynomial([1, 3])
+    p2 = Polynomial([1, -3])
+    p3 = Polynomial([1, 0, -9])
+    assert(p1.multiplyPolynomial(p2) == p3) # (x + 3)(x - 3) == (x**2 - 9)
+    assert(p1 == Polynomial([1, 3]))
+
+    # (x**2 + 2)(x**4 + 3x**2) == (x**6 + 5x**4 + 6x**2)
+    p1 = Polynomial([1,0,2])
+    p2 = Polynomial([1,0,3,0,0])
+    p3 = Polynomial([1,0,5,0,6,0,0])
+    assert(p1.multiplyPolynomial(p2) == p3)
+
+def testPolynomialClass():
+    print('Testing Polynomial class...', end='')
+    testPolynomialBasics()
+    testPolynomialEq()
+    testPolynomialConstructor()
+    testPolynomialInSets()
+    testPolynomialMath()
+    print('Passed!')
+
+def testQuadraticClass():
+    import math
+    print("Testing Quadratic class...", end="")
+    # Quadratic should inherit properly from Polynomial
+    q1 = Quadratic([3,2,1])  # 3x^2 + 2x + 1
+    assert(type(q1) == Quadratic)
+    assert(isinstance(q1, Quadratic) and isinstance(q1, Polynomial))
+    assert(q1.evalAt(10) == 321)
+    assert(str(q1) == "Quadratic(a=3, b=2, c=1)")
+
+    # We use the quadratic formula to find the function's roots.
+    # More info: https://www.mathsisfun.com/quadratic-equation-solver.html
+
+    # the discriminant is b**2 - 4ac
+    assert(q1.discriminant() == -8)
+    # use the discriminant to determine how many real roots (zeroes) exist
+    assert(q1.numberOfRealRoots() == 0)
+    assert(q1.getRealRoots() == [ ])
+
+    # Once again, with a double root
+    q2 = Quadratic([1,-6,9])
+    assert(q2.discriminant() == 0)
+    assert(q2.numberOfRealRoots() == 1)
+    [root] = q2.getRealRoots()
+    assert(math.isclose(root, 3))
+    assert(str(q2) == "Quadratic(a=1, b=-6, c=9)")
+
+    # And again with two roots
+    q3 = Quadratic([1,1,-6])
+    assert(q3.discriminant() == 25)
+    assert(q3.numberOfRealRoots() == 2)
+    [root1, root2] = q3.getRealRoots() # smaller one first
+    assert(math.isclose(root1, -3) and math.isclose(root2, 2))
+
+    # Creating a non-quadratic "Quadratic" is an error
+    ok = False # the exception turns this to True!
+    try: q = Quadratic([1,2,3,4]) # this is cubic, should fail!
+    except: ok = True
+    assert(ok)
+    # one more time, with a line, which is sub-quadratic, so also fails
+    ok = False
+    try: q = Quadratic([2,3])
+    except: ok = True
+    assert(ok)
+
+    # And make sure that these methods were defined in the Quadratic class
+    # and not in the Polynomial class (we'll just check a couple of them...)
+    assert('evalAt' in Polynomial.__dict__)
+    assert('evalAt' not in Quadratic.__dict__)
+    assert('discriminant' in Quadratic.__dict__)
+    assert('discriminant' not in Polynomial.__dict__)
+    print("Passed!")
+
+def testEquationClasses():
+    testPolynomialClass()
+    testQuadraticClass()
+
+
+def testTokenizeTurtleScript():
+    print("Testing tokenizeTurtleScript()...", end="")
+    given = "F120L90F120L90F120L90F120"
+    result = ['F120', 'L90', 'F120', 'L90', 'F120', 'L90', 'F120']
+    assert(tokenizeTurtleScript(given) == result)
+
+    given = "X4 {F120 L90} U F200 X4 {F120 L90}"
+    result = ['X4{F120L90}', 'U', 'F200', 'X4{F120L90}']
+    assert(tokenizeTurtleScript(given) == result)
+
+    given = "MS { X4 { L90 F50}} S U F100 D S"
+    result = ['MS{X4{L90F50}}', 'S', 'U', 'F100', 'D', 'S']
+    assert(tokenizeTurtleScript(given) == result)
+    print("Passed!")
+    
+def testTurtleScript():
+    testTokenizeTurtleScript()
+    
+    
+#################################################
+# testAll and main
+#################################################
+
+### You should call your test functions here ####
+def testAll():
+    testAlternatingSum()
+    testOnlyEvenDigits()
+    testEquationClasses()
+    testTurtleScript()
+
+def main():
+    testAll()
+
+if __name__ == '__main__':
+    main()
+
+    
+    
+    
+    
+    
+    
