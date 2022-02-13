@@ -1,0 +1,286 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Nov 9, 2021
+
+# Topic
+# Animations
+#################################################
+
+
+from cmu_112_graphics import *
+import random
+
+
+def _from_rgb(rgb):
+    """translates an rgb tuple of int to a tkinter friendly color code
+    """
+    return "#%02x%02x%02x" % rgb
+
+# a fuction to define the variables
+def appStarted(app):
+    app.score = 0
+    app.waiting = 0
+    app.blips2 = 0
+    app.difficulty = 0
+    app.count = 1
+    app.changed = False
+    app.blips = 0
+    app.timerDelay = 100
+    app.timer = 10
+    
+    # used to identify if the game is over
+    app.gameOver = False
+    
+    
+    # a list to keep track of user's input
+    app.userList = []
+    
+    # a list for compauter created pattern
+    app.compList = []
+    
+    
+    app.AllColors = ["R", "G", "B", "Y"]
+    app.user = ""
+    
+    # defines which page to show
+    app.starter = True
+    app.easy = False
+    app.normal = False
+    app.hard = False
+    
+    # used to identify when the pattern stops
+    app.Seq = True
+    
+    # variable for mostly used common color
+    app.black = "black"
+    app.levelW = 2.65
+    
+    # a list to identify color changes
+    # contains only zeros and ones
+    # chacked in the redrawAll function
+    app.color = [0,0,0,0]
+    
+    # four colors with their darker version
+    app.green = _from_rgb( (0,255,0) )
+    app.greenChanged = _from_rgb( (157, 252, 3) )
+    
+    app.red = _from_rgb( (255,0,0) )
+    app.redChanged = _from_rgb( (150,0,0) )
+    
+    app.blue = _from_rgb( (0,0,255) )
+    app.blueChanged = _from_rgb( (0,0,150) )
+    
+    app.yellow = _from_rgb( (252, 240, 3) )
+    app.yellowChanged = _from_rgb( (252, 186, 3) )
+    
+
+def keyPressed(app, event):
+    # restarting game
+    if event.key == "r":
+        appStarted(app)
+    # level one
+    if event.key == "1":
+        app.easy = True
+        app.starter = False
+        app.Seq =True
+        app.difficulty = 10
+    
+    # level two
+    if event.key == "2":
+        app.normal = True
+        app.starter = False
+        app.Seq =True
+        app.difficulty = 5
+    
+    # level three
+    if event.key == "3":
+        app.hard = True
+        app.starter = False
+        app.Seq =True
+        app.difficulty = 2
+        
+    # allows user to give input
+    # if the pattern is already shown
+    if app.Seq == False:
+        if event.key == "R":
+            app.userList.append("R")
+        if event.key == "G":
+            app.userList.append("G")
+        if event.key == "B":
+            app.userList.append("B")
+        if event.key == "Y":
+            app.userList.append("Y")
+        if len(app.userList) == 4:
+            app.userList.pop(0)
+            
+        # checks for Game Over
+        if event.key == "Enter":
+            if app.compList != app.userList:
+                app.gameOver = True
+
+# checks mouse clicks
+def mousePressed(app, event):
+    # works only when the pattern is already shown
+    if app.Seq == False:
+        if event.x < app.width/2 and event.y < app.height/2:
+            app.user = "G"
+        if event.x > app.width/2 and event.y > app.height/2:
+            app.user = "B"
+        if event.x < app.width/2 and event.y > app.height/2:
+            app.user = "Y"
+        if event.x > app.width/2 and event.y < app.height/2:
+            app.user = "R"
+        app.userList.append(app.user)
+        
+        # checks the input as is given
+        for i in range(len(app.userList)):
+            if app.userList[i] != app.compList[i]:
+                app.gameOver = True
+            else:
+                app.score += 1
+                
+        if app.userList == app.compList:
+            app.count += 1
+            app.Seq = True
+        
+        
+
+
+def timerFired(app):
+    savedI = 0
+    if app.Seq == False:
+        app.blips2 += 1
+        if (app.blips2 % 5) == 0:
+            if app.timer == 0:
+                app.gameOver = True
+            app.timer -= 0.5
+            
+    if app.Seq:
+        #if app.waiting < 100:
+            #app.waiting += 1
+            
+            
+        while len(app.compList) != app.count:
+            
+            app.blips += 1
+            
+            # runs for some time depending on the level of difficulty
+            if (app.blips % 10) == 0 and app.changed == False:
+                i = random.randint(0,3)
+                savedI = i
+                app.color[i] = 1
+                app.compList.append(app.AllColors[i])
+                app.changed = True
+                
+            # used to get the changed color to its original
+            elif (app.blips % 10) == 0 and app.changed == True:
+                app.color[savedI] = 0
+                app.changed = False
+        # once the pattern is shown,
+        # it stops and waits for the user input
+        app.Seq = False
+        
+        # goes to the next level
+        app.count += 1
+    
+            
+    
+def redrawAll(app, canvas):
+    # draw intial screen at first
+    if app.starter:
+        # text: Simon
+        canvas.create_text(app.width/2, app.height/2.75, text="Simon",
+                         fill=app.black, font="Arial 20 bold")
+        
+        # text for showing levels
+        canvas.create_text(app.width/app.levelW, app.height/1.85, text="Press 1 for Easy",
+                         fill=app.black, font="Arial 12 bold", anchor="w")
+        canvas.create_text(app.width/app.levelW, app.height/1.75, text="Press 2 for Normal",
+                         fill=app.black, font="Arial 12 bold", anchor="w")
+        canvas.create_text(app.width/app.levelW, app.height/1.65, text="Press 3 for Hard",
+                         fill=app.black, font="Arial 12 bold", anchor="w")
+    
+    # draw when a player chooses a level
+    if app.starter == False and app.gameOver == False:
+        # draws the main rectangles of the game
+        
+        # these if statements check which color to change
+        # and draws the page accordingly
+        if app.color[0] == 1:
+            canvas.create_rectangle(0, 0, app.width/2, app.height/2,
+                                    fill=app.green, width=15)
+            canvas.create_rectangle(app.width/2, 0, app.width, app.height/2,
+                                    fill=app.redChanged, width=15)
+            canvas.create_rectangle(0, app.height/2, app.width/2, app.height,
+                                    fill=app.yellow, width=15)
+            canvas.create_rectangle(app.width/2, app.height/2, app.width,
+                                    app.height, fill=app.blue, width=15)
+            canvas.create_rectangle(app.width/3, 0, app.width/3*2,
+                                    app.height/12, fill="orange")
+        
+            
+        elif app.color[1] == 1:
+            canvas.create_rectangle(0, 0, app.width/2, app.height/2,
+                                    fill=app.green, width=15)
+            canvas.create_rectangle(app.width/2, 0, app.width, app.height/2,
+                                    fill=app.red, width=15)
+            canvas.create_rectangle(0, app.height/2, app.width/2, app.height,
+                                    fill=app.yellow, width=15)
+            canvas.create_rectangle(app.width/2, app.height/2, app.width,
+                                    app.height, fill=app.blueChanged, width=15)
+            canvas.create_rectangle(app.width/3, 0, app.width/3*2,
+                                    app.height/12, fill="orange")
+            
+        elif app.color[2] == 1:
+            canvas.create_rectangle(0, 0, app.width/2, app.height/2,
+                                    fill=app.greenChanged, width=15)
+            canvas.create_rectangle(app.width/2, 0, app.width, app.height/2,
+                                    fill=app.red, width=15)
+            canvas.create_rectangle(0, app.height/2, app.width/2, app.height,
+                                    fill=app.yellow, width=15)
+            canvas.create_rectangle(app.width/2, app.height/2, app.width,
+                                    app.height, fill=app.blue, width=15)
+            canvas.create_rectangle(app.width/3, 0, app.width/3*2,
+                                    app.height/12, fill="orange")
+            
+        elif app.color[3] == 1:
+            canvas.create_rectangle(0, 0, app.width/2, app.height/2,
+                                    fill=app.green, width=15)
+            canvas.create_rectangle(app.width/2, 0, app.width, app.height/2,
+                                    fill=app.red, width=15)
+            canvas.create_rectangle(0, app.height/2, app.width/2, app.height,
+                                    fill=app.yellowChanged, width=15)
+            canvas.create_rectangle(app.width/2, app.height/2, app.width,
+                                    app.height, fill=app.blue, width=15)
+            canvas.create_rectangle(app.width/3, 0, app.width/3*2,
+                                    app.height/12, fill="orange")
+        else:
+            canvas.create_text(app.width//16, app.height//20, text=f"{app.timer}",
+                               fill=app.black, font="Arial 10 bold", anchor="w")
+            canvas.create_rectangle(0, 0, app.width/2, app.height/2,
+                                    fill=app.green, width=15)
+            canvas.create_rectangle(app.width/2, 0, app.width, app.height/2,
+                                    fill=app.red, width=15)
+            canvas.create_rectangle(0, app.height/2, app.width/2, app.height,
+                                    fill=app.yellow, width=15)
+            canvas.create_rectangle(app.width/2, app.height/2, app.width,
+                                    app.height, fill=app.blue, width=15)
+            canvas.create_rectangle(app.width/3, 0, app.width/3*2,
+                                    app.height/12, fill="orange")
+    
+    # Game Over 
+    if app.gameOver:
+        
+        # Game over text
+        canvas.create_text(app.width/2, app.height/2.75, text="Game Over",
+                         fill=app.black, font="Arial 20 bold")
+        
+        # Score text
+        canvas.create_text(app.width/app.levelW, app.height/1.85, text=f"Score: {app.score}",
+                         fill=app.black, font="Arial 12 bold", anchor="w")
+        
+    
+    
+
+runApp(width=600, height=600)
