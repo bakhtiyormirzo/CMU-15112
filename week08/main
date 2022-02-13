@@ -1,0 +1,297 @@
+#################################################
+
+# Your name: Bakhtiyorjon Mirzajonov
+# Nov 2, 2021
+
+# Topics
+# Graphics
+
+#################################################
+
+
+import basic_graphics
+import math
+import colorsys
+
+
+
+def draw(canvas, width, height):
+    pass
+
+
+
+
+#     L = ['bananas', 'oranges', 'oranges', 'bananas', 'apples',\
+#      'oranges', 'apples', 'pineapple', 'apples', 'apples' ]
+#     
+#     drawBarChart(canvas, width, height, L)
+    
+    
+#     xc = 400
+#     yc = 400
+#     r = 100
+#     level = 5
+#     canvas.create_rectangle(0,0,width, height, fill="black")
+#     drawFractalSun(canvas, xc, yc, r, level)
+
+
+
+#     string1 = "RHBQKBHRPPPPPPPP         "
+#     string2 = "                       pppppppprhbqkbhr"
+#     board = string1 + string2
+#     color = (0,0,255)
+#     margin = 20
+# 
+#     drawChessBoard(canvas, width, height, board, color, margin) 
+    
+    
+# a function to put the unique elements
+# of the list to a dictionary with the count
+def listOfItemsToDict(L):
+    database = dict()
+    
+    for i in L:
+        if i not in database:
+            database[i] = 1
+        elif i in database:
+            database[i] += 1
+            
+    for key in database:
+        database[key] = database[key] / len(L)
+    
+    return [database, len(database)]
+
+# given the strings inside the list
+# the function draws a bar chart
+def drawBarChart(canvas, w, h, L):
+    
+    # takes the list of strings
+    # and puts them in a dictionary
+    newL = listOfItemsToDict(L)
+    database = newL[0]
+    lenOfItems = newL[1]
+    
+    # used to leave some margin 
+    marginW = 70
+    margin = h - 120
+    heightRange = (h-120)//11
+    
+    # divides the width of the chart
+    # depending on the number of unique items
+    parts = (w-2*marginW) / lenOfItems
+    markRange = (w-2*marginW) / (2*lenOfItems)
+    lowerX = 70
+    lowerY = 11*heightRange
+    colors = ['red','green','blue','cyan','yellow','magenta']
+    colSetter = 0
+    
+    # goes through each string saved inside the dictionary
+    # draws the needed rectangle to show its value in the chart
+    for key in database:
+        
+        # used to differentiate the color
+        if colSetter < len(colors):
+            color = colors[colSetter]
+            colSetter += 1
+        else:
+            colSetter = 0
+        
+        
+        # draws the rectangle for the value of the string
+        value = database[key] * 10
+        canvas.create_rectangle(lowerX+(value-1)*parts,
+                                lowerY-value*heightRange,
+                                lowerX+value*parts, lowerY, fill=color)
+        
+        # draws the marker line in the edge
+        canvas.create_line((lowerX+value*parts)-markRange, lowerY,
+                           (lowerX+value*parts)-markRange, lowerY+15)
+        
+        # defines the text size
+        textSize = w // 100
+        
+        # horizontal axis text
+        canvas.create_text((lowerX+value*parts)-markRange, lowerY+70,
+                        text=f"{key}", font=f'Arial {textSize}', angle=90)
+    
+   
+    
+    x = 1
+    n = 1.0
+    for i in range(11):
+        
+        # dashed and undashed lines of the bar chart
+        if x > 1 and x < 11:
+            canvas.create_line(marginW, x*heightRange,
+                               w-marginW, x*heightRange, dash=(1,1))
+        else:
+            canvas.create_line(marginW, x*heightRange,
+                               w-marginW, x*heightRange)
+        
+        canvas.create_line(marginW-15, x*heightRange,
+                           marginW, x*heightRange)
+        
+        # vertical axis text
+        textSize = w // 100
+        canvas.create_text(30, x*heightRange, text=f"{n}",
+                        font=f'Arial {textSize}')
+        n = round(n-0.1, 1)
+        x += 1
+    
+    # borders of the bar chart
+    canvas.create_line(marginW, heightRange, marginW, 11*heightRange)
+    canvas.create_line(w-marginW, heightRange, w-marginW, 11*heightRange)
+    
+        
+    
+        
+
+def _from_rgb(rgb):
+    """translates an rgb tuple of int to a tkinter friendly color code
+    """
+    return "#%02x%02x%02x" % rgb 
+
+# draws a fractal sun recursively 
+def drawFractalSun(canvas, xc, yc, r, level):
+    # Base case
+    if level == 0:
+        return
+    
+    # Recursive case
+    elif level > 0:
+        
+        # angle of the rays
+        rays = (2*math.pi)/8
+        
+        # loop to draw 8 rays and call the function
+        # again with new parameters
+        for i in range(8):
+            if level > 2:
+                canvas.create_line(xc, yc, xc+2*r*math.sin(i*rays),
+                                yc+2*r*math.cos(i*rays), fill="yellow")
+            
+            # to change the color
+            (f, g, b) = colorsys.hsv_to_rgb(float(level) / 30, 1.0, 1.0)
+            R, G, B = int(255 * f), int(255 * g), int(255 * b)
+     
+            # convert the r g b tuple to tkinter compatible color string 
+            linecolor = _from_rgb((R,G,B))
+            
+            canvas.create_oval(xc-r, yc-r, xc+r, yc+r, fill=linecolor)
+            
+            drawFractalSun(canvas, xc+2*r*math.sin(i*rays),
+                           yc+2*r*math.cos(i*rays), r//4, level-1)
+        
+    
+def rgbString(red, green, blue):
+    return "#%02x%02x%02x" % (red, green, blue)
+
+# a function for white characters of the chessboard
+def putTheBlackChar(canvas,i,j,board,width,m,boxH,boxW):
+    
+    # size of the character
+    textSize = width // 30
+    
+    # rook
+    if board[(i*8)+j] == "R":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265C",
+                    font=f'Arial {textSize}')
+        
+    # knight
+    if board[(i*8)+j] == "H":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265E",
+                    font=f'Arial {textSize}')
+        
+    # bishop
+    if board[(i*8)+j] == "B":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265D",
+                    font=f'Arial {textSize}')
+        
+    # queen
+    if board[(i*8)+j] == "Q":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265B",
+                    font=f'Arial {textSize}')
+        
+    # king
+    if board[(i*8)+j] == "K":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265A",
+                    font=f'Arial {textSize}')
+        
+    # pawn
+    if board[(i*8)+j] == "P":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u265F",
+                    font=f'Arial {textSize}')
+    
+# a function for white characters of the chessboard
+def putTheWhiteChar(canvas,i,j,board,width,m,boxH,boxW):
+    
+    # size of the character
+    textSize = width // 30
+    
+    # rook
+    if board[(i*8)+j] == "r":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2656",
+                    font=f'Arial {textSize}')
+        
+    # knight
+    if board[(i*8)+j] == "h":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2658",
+                    font=f'Arial {textSize}')
+    
+    # bishop
+    if board[(i*8)+j] == "b":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2657",
+                    font=f'Arial {textSize}')
+    
+    # queen
+    if board[(i*8)+j] == "q":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2655",
+                    font=f'Arial {textSize}')
+        
+    # king
+    if board[(i*8)+j] == "k":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2654",
+                    font=f'Arial {textSize}')
+        
+    # pawn
+    if board[(i*8)+j] == "p":
+        canvas.create_text(m+j*boxW+boxW/2, m+i*boxH+boxH/2, text=f"\u2659",
+                    font=f'Arial {textSize}')
+
+
+# a function to draw the chessboard with the character
+def drawChessBoard(canvas, width, height, board, color, margin):
+    
+    # color for the margin
+    bigColor = rgbString(color[0], color[1], color[2])
+    canvas.create_rectangle(0, 0, width, height, fill=bigColor)
+    
+    # color for the non-white boxes
+    smallColor = rgbString(color[0], color[1]+170, color[2])
+    canvas.create_rectangle(margin, margin, width-margin,
+                            height-margin, width=0, fill=smallColor)
+    
+    # width and height of the boxes
+    boxH = (height-2*margin) / 8
+    boxW = (width-2*margin) / 8
+    
+    # loops to go through every box
+    # and draws the white box where needed
+    # and puts the character where needed using helper function
+    for i in range(8):
+        for j in range(8):
+            if (i%2==0 and j%2==0) or (i%2==1 and j%2==1):
+                
+                # draws white rectangle
+                canvas.create_rectangle(margin+j*boxW, margin+i*boxH,
+                margin+(j+1)*boxW, margin+(i+1)*boxH, fill="white")
+            
+            # used to put chess characters
+            putTheWhiteChar(canvas,i,j,board,width,margin,boxH,boxW)
+            putTheBlackChar(canvas,i,j,board,width,margin,boxH,boxW)
+            
+
+
+basic_graphics.run(width=800, height=800)
+
+
