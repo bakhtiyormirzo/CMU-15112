@@ -3,12 +3,13 @@
 # Bakhtiyorjon Mirzajonov
 
 # Aug 31, 2021
-###################
 
 # Topics
 # Introduction to Computing 
 # Getting started with Python
 # Sequences and functions with Turtle
+
+###################
 
 # this python code draws three picture: clock, flag of Qatar, and school 
 # to run the program, uncomment the drawClassroom() function at the bottom
